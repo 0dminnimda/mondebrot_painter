@@ -1,34 +1,26 @@
-import cv2 as cv
+#!/usr/bin/env python3.8
+
 import time
+from math import sqrt
+import cv2 as cv
 import numpy as np
 import multiprocessing as mp
 from multiprocessing import Process
 
 
-def st(z):
-    r = z[0]**2-(z[1]**2)
-    i = z[0]*z[1]*2
-    return r, i
+def belonging(real, imag, max_iter=50, formula="z**2 + c"):
+    # Belonging to a set of mandelbrot
 
+    z = 0
+    c = complex(real, imag)
 
-def f(z, c):
-    s = st(z)
-    r = s[0]+c[0]
-    i = s[1]+c[1]
-    return r, i
+    for i in range(max_iter):
+        #exec("z = "+formula) 
+        z = z**2 + c
+        if abs(z) >= 2:
+            return False
 
-
-def mon(r, i, n=100):
-    z = (0, 0)
-    c = (r, i)
-    try:
-        for i in range(n):
-            z = f(z, c)
-    except OverflowError:
-        p = False
-    else:
-        p = True
-    return p
+    return True
 
 
 def drmon(qlt, devi1, dell, part, qq=0):
@@ -48,7 +40,7 @@ def drmon(qlt, devi1, dell, part, qq=0):
     ww = [[[None, i/de, j/de] for j in range(h1, h1+hr)] for i in range(v1, v1+vr)]
     for i in ww:
         for j in i:
-            j[0] = mon(j[1], j[2])
+            j[0] = belonging(j[1], j[2])
     if qq != 0:
         qq.put(ww)
     else:
@@ -101,7 +93,7 @@ def myar_to_img(w, fcolor, scolor, mode):
 if __name__ == '__main__':
     #for i in range(1,11):
     #    drmon(2**i,2,1,1)
-    factor = 0
+    factor = 3
     while 1:
         factor += 1  # quality factor
         start_0 = time.time()
