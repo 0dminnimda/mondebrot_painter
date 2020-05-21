@@ -23,30 +23,6 @@ def belonging(real, imag, max_iter=100, formula="z**2 + c"):
     return True
 
 
-def drmon(senter, quality, mode, processes_num, num, queue=0):
-    # num -= 1
-    # squeue = sqrt(quality)
-
-    quality = 100*quality
-    h1 = quality*-1.25
-    v1 = quality*-2.1  # quality*185
-    hr, vr = (250/mode)*quality+1, (265/processes_num)*quality
-    v1 += vr*num
-
-    #print(-h1+(h1+hr), -v1+(v1+vr), quality, mode, processes_num, num)
-    h1, v1, quality, hr, vr = int(h1), int(v1), int(quality), int(hr), int(vr)
-    #print(-h1+(h1+hr), -v1+(v1+vr), quality, mode, processes_num, num)
-
-    ww = [[[None, i/quality, j/quality] for j in range(h1, h1+hr)] for i in range(v1, v1+vr)]
-    for i in ww:
-        for j in i:
-            j[0] = belonging(j[1], j[2])
-    if queue != 0:
-        queue.put(ww)
-    else:
-        return ww
-
-
 def turning(senter, length):
     diagonal_0 = np.array([length, length])
     #diagonal_1 = np.array([length, -length])
