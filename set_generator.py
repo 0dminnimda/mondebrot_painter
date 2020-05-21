@@ -24,9 +24,9 @@ def belonging(real, imag, max_iter=100, formula="z**2 + c"):
 
 
 def drmon(quality, mode, processes_num, num, queue=0):
-    num -= 1
-    # quality*=2
-    squeue = sqrt(quality)
+    # num -= 1
+    # squeue = sqrt(quality)
+
     de = 100*quality
     h1 = de*-1.25
     v1 = de*-2.1  # quality*185
@@ -51,8 +51,8 @@ def mp_setup_and_run(quality, mode, processes_num):
     range_ = range(processes_num)
     queue = {}
     processes = {}
-    w = {}
-    wg = []
+    sub_result = {}
+    result = []
 
     for i in range_:
         queue[i] = mp.Queue()
@@ -60,27 +60,25 @@ def mp_setup_and_run(quality, mode, processes_num):
         processes[i].start()
 
     for i in range_:
-        w[i] = queue[i].get()
-        wg += w[i]
+        sub_result[i] = queue[i].get()
+        result += sub_result[i]
         processes[i].join()
 
-    return wg
+    return result
 
 
 if __name__ == '__main__':
-    factor = 0
-
-    #while 1:
-    factor += 1  # quality factor
     start = time.time()
 
+    factor = 0  # quality factor
     quality = 2**factor
     processes_num = 3  # number of processes used in multiprocessing
-    mode = 2  # when “1” calculates the whole image,
-    # when “2” calculates the mirror half; only affects performance
+    mode = 2  # 1 - calculates the whole image; 2 only half, other half - mirror image
+
     # h1,v1 = 50,50
+
     set_ = mp_setup_and_run(quality, mode, processes_num)  # multiprocessing
-    np.save(f"mandelbrot_set_{quality}", set_)
+    np.save(f"mandelbrot_set_{quality}", [set_, mode, quality])
 
     end = time.time() - start
-    print(f"{quality} - {end} sec")
+    print(f"{quality}: {end} sec")
