@@ -1,67 +1,12 @@
 #!/usr/bin/env python3.8
 
 import time
-from math import sqrt
 import cv2 as cv
 import numpy as np
+from math import sqrt
+import colorsys as cs
 import multiprocessing as mp
 from multiprocessing import Process
-
-
-def belonging(real, imag, max_iter=50, formula="z**2 + c"):
-    # Belonging to a set of mandelbrot
-
-    z = 0
-    c = complex(real, imag)
-
-    for i in range(max_iter):
-        #exec("z = "+formula) 
-        z = z**2 + c
-        if abs(z) >= 2:
-            return False
-
-    return True
-
-
-def drmon(qlt, devi1, dell, part, qq=0):
-    part -= 1
-    # qlt*=2
-    sqq = sqrt(qlt)
-    de = 100*qlt
-    h1 = de*-1.25
-    v1 = de*-2.1  # qlt*185
-    hr, vr = (250/devi1)*qlt+1, (265/dell)*qlt
-    v1 += vr*part
-
-    #print(-h1+(h1+hr), -v1+(v1+vr), qlt, devi1, dell, part)
-    h1, v1, de, hr, vr = int(h1), int(v1), int(de), int(hr), int(vr)
-    #print(-h1+(h1+hr), -v1+(v1+vr), qlt, devi1, dell, part)
-
-    ww = [[[None, i/de, j/de] for j in range(h1, h1+hr)] for i in range(v1, v1+vr)]
-    for i in ww:
-        for j in i:
-            j[0] = belonging(j[1], j[2])
-    if qq != 0:
-        qq.put(ww)
-    else:
-        return ww
-
-
-def funccol(qlt, mode, dell):
-    ran = range(1, dell+1)
-    qq, pr, w, wg = {}, {}, {}, []
-
-    for i in ran:
-        qq[i] = mp.Queue()
-        pr[i] = Process(target=drmon, args=([qlt, mode, dell, i, qq[i]]))
-        pr[i].start()
-
-    for i in ran:
-        w[i] = qq[i].get()
-        wg += w[i]
-        pr[i].join()
-
-    return wg
 
 
 def myar_to_img(w, fcolor, scolor, mode):
@@ -90,25 +35,37 @@ def myar_to_img(w, fcolor, scolor, mode):
     else:
         return "error"
 
+
+def gradient(start_rgb, end_rgb, num):
+    start_hsv = cs.rgb_to_hsv(*start_rgb)
+    end_hsv = cs.rgb_to_hsv(*end_rgb)
+    np.linspace()
+
+
 if __name__ == '__main__':
+    SET_COLOR = (0, 0, 0)
+    GRADIENT_START = (255, 255, 255)
+    GRADIENT_END = (255, 255, 255)
+    OTHER_COLOR = (255, 255, 255)
+
     #for i in range(1,11):
     #    drmon(2**i,2,1,1)
-    factor = 3
+    factor = 0
     while 1:
         factor += 1  # quality factor
-        start_0 = time.time()
+        start = time.time()
         qual = 2**factor  # quality
-        processes_num = 8  # number of processes used in multiprocessing
+        processes_num = 3  # number of processes used in multiprocessing
         mode = 2  # when “1” calculates the whole image,
         # when “2” calculates the mirror half; only affects performance
         # h1,v1 = 50,50
         myar = funccol(qual, mode, processes_num)  # multiprocessing
         img = myar_to_img(myar, (255, 255, 255), (0, 0, 0), mode)
-        end_0 = time.time() - start_0
-        print(end_0, "sec")
+        end = time.time() - start
+        print(f"{qual} - {end} sec")
 
         # cv.namedWindow ( "b" , cv.WINDOW_NORMAL)
-        cv.imshow(f"mon_img_{qual}", img)
-        cv.imwrite(f"mon_img_{qual}.png", img)
+        cv.imshow(f"mandelbrot_set_{qual}", img)
+        cv.imwrite(f"mandelbrot_set_{qual}.png", img)
         cv.waitKey(0)
     cv.destroyAllWindows()
