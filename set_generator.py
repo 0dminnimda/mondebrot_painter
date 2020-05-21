@@ -23,21 +23,21 @@ def belonging(real, imag, max_iter=100, formula="z**2 + c"):
     return True
 
 
-def drmon(quality, mode, processes_num, num, queue=0):
+def drmon(senter, quality, mode, processes_num, num, queue=0):
     # num -= 1
     # squeue = sqrt(quality)
 
-    de = 100*quality
-    h1 = de*-1.25
-    v1 = de*-2.1  # quality*185
+    quality = 100*quality
+    h1 = quality*-1.25
+    v1 = quality*-2.1  # quality*185
     hr, vr = (250/mode)*quality+1, (265/processes_num)*quality
     v1 += vr*num
 
     #print(-h1+(h1+hr), -v1+(v1+vr), quality, mode, processes_num, num)
-    h1, v1, de, hr, vr = int(h1), int(v1), int(de), int(hr), int(vr)
+    h1, v1, quality, hr, vr = int(h1), int(v1), int(quality), int(hr), int(vr)
     #print(-h1+(h1+hr), -v1+(v1+vr), quality, mode, processes_num, num)
 
-    ww = [[[None, i/de, j/de] for j in range(h1, h1+hr)] for i in range(v1, v1+vr)]
+    ww = [[[None, i/quality, j/quality] for j in range(h1, h1+hr)] for i in range(v1, v1+vr)]
     for i in ww:
         for j in i:
             j[0] = belonging(j[1], j[2])
@@ -47,7 +47,47 @@ def drmon(quality, mode, processes_num, num, queue=0):
         return ww
 
 
-def mp_setup_and_run(quality, mode, processes_num):
+def turning(senter, length):
+    diagonal_0 = complex(length, length)
+    diagonal_1 = complex(length, -length)
+
+    vertices = [
+        senter - diagonal_0,
+        senter - diagonal_1,
+        senter + diagonal_1,
+        senter + diagonal_0,
+    ]
+
+    return vertices
+
+
+def make_set(senter, length, quality, processes_num, num, mode, queue=None):
+
+    x0, x1, y0, y1 = turning(senter, length)
+
+
+
+    # h1 = quality*-1.25
+    # v1 = quality*-2.1  # quality*185
+    # hr, vr = (250/mode)*quality+1, (265/processes_num)*quality
+    # v1 += vr*num
+
+    #print(-h1+(h1+hr), -v1+(v1+vr), quality, mode, processes_num, num)
+    # h1, v1, quality, hr, vr = int(h1), int(v1), int(quality), int(hr), int(vr)
+    #print(-h1+(h1+hr), -v1+(v1+vr), quality, mode, processes_num, num)
+
+    set_ = [
+        [belonging(i, j) for j in np.linspace(x0, x1, quality)]
+        for i in np.linspace(y0, y1, quality)
+    ]
+            
+    if queue is not None:
+        queue.put(set_)
+    else:
+        return set_
+
+
+def mp_setup_and_run(senter, length, quality, processes_num, mode):
     range_ = range(processes_num)
     queue = {}
     processes = {}
@@ -56,7 +96,9 @@ def mp_setup_and_run(quality, mode, processes_num):
 
     for i in range_:
         queue[i] = mp.Queue()
-        processes[i] = Process(target=drmon, args=([quality, mode, processes_num, i, queue[i]]))
+        processes[i] = Process(
+            target=make_set,
+            args=[senter, length, quality, processes_num, i, mode, queue[i]])
         processes[i].start()
 
     for i in range_:
@@ -70,14 +112,17 @@ def mp_setup_and_run(quality, mode, processes_num):
 if __name__ == '__main__':
     start = time.time()
 
-    factor = 0  # quality factor
+    senter = -0.5j
+    length = 1.5
+
+    factor = 1  # quality factor
     quality = 2**factor
     processes_num = 3  # number of processes used in multiprocessing
-    mode = 2  # 1 - calculates the whole image; 2 only half, other half - mirror image
+    mode = 1  # 1 - calculates the whole image; 2 only half, other half - mirror image
 
     # h1,v1 = 50,50
 
-    set_ = mp_setup_and_run(quality, mode, processes_num)  # multiprocessing
+    set_ = mp_setup_and_run(senter, length, quality, processes_num, mode)  # multiprocessing
     np.save(f"mandelbrot_set_{quality}", [set_, mode, quality])
 
     end = time.time() - start
