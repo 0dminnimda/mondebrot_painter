@@ -18,7 +18,7 @@ def myar_to_img(w, scolor, fcolor, mode):
         jj = -1
         for j in i:
             jj += 1
-            if j[0] is True:
+            if j is True:
                 ar1[ii][jj] = scolor
     ar2 = np.copy(ar1)
     for i in range(len(ar2)):
@@ -45,14 +45,12 @@ if __name__ == '__main__':
     GRADIENT_END = (0, 191, 255)
     OTHER_COLOR = (255, 255, 255)
 
-    #for i in range(1,11):
-    #    drmon(2**i,2,1,1)
-
-    quality = 2*2*3*4*5
+    factor = 5.5
+    quality = int(4**factor)
 
     data = np.load(f"mandelbrot_set_{quality}.npy", allow_pickle=True)
 
-    set_, mode, quality = data
+    set_, mode, quality, max_iter = data
     
     img = myar_to_img(set_, SET_COLOR, OTHER_COLOR, mode)
 
@@ -60,6 +58,6 @@ if __name__ == '__main__':
         # cv.namedWindow ( "b" , cv.WINDOW_NORMAL)
         cv.imshow(f"mandelbrot_set_{quality}", img)
         cv.imwrite(f"mandelbrot_set_{quality}.png", img)
-        if cv.waitKey(0) & 0xFF == ord('2'):
+        if cv.waitKey(0):# & 0xFF == ord('2'):
             cv.destroyAllWindows()
             break
