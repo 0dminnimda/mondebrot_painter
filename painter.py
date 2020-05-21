@@ -6,7 +6,7 @@ import numpy as np
 import colorsys as cs
 
 
-def myar_to_img(w, fcolor, scolor, mode):
+def myar_to_img(w, scolor, fcolor, mode):
     hei = len(w)*1
     wid = len(w[0])*1
     ar1 = np.zeros((hei, wid, 3), np.uint8)
@@ -48,14 +48,12 @@ if __name__ == '__main__':
     #for i in range(1,11):
     #    drmon(2**i,2,1,1)
 
-    quality = 1
+    quality = 2**5
 
     data = np.load(f"mandelbrot_set_{quality}.npy", allow_pickle=True)
 
     set_, mode, quality = data
-    # mode = data[1]
-    # quality = data[2]
-    # set_ = data[0]
+    
     img = myar_to_img(set_, SET_COLOR, OTHER_COLOR, mode)
 
     while 1:
