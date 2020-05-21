@@ -61,42 +61,23 @@ def turning(senter, length):
     return vertices
 
 
-def rectangle_division(x, y, total, num):
-    #x0, y0, x1, y1 = *x, *y
-    y1, x0, y0, x1 = *x, *y
+def rectangle_division(pt0, pt1, total, num):
+    x0, y0, x1, y1 = *pt0, *pt1
 
-    part = (y1-y0)/total
+    part = (x1-x0)/total
 
-    #return x0, x1, y0, y1
-    return x0, x1, y0+part*num, y0+part*(num+1)
+    return x0 + part*num, x0 + part*(num+1), y0, y1
 
 
 def make_set(senter, length, quality, processes_num, num, mode, queue=None):
-
     vertices = turning(senter, length)
-
     x0, x1, y0, y1 = rectangle_division(*vertices, processes_num, num)
 
-    with open("output.txt", "a") as file:
-       file.write(f"{num}, {x0}, {x1}, {y0}, {y1} \n")
-    print(num, x0, x1, y0, y1)
-
-    
-
-    # h1 = quality*-1.25
-    # v1 = quality*-2.1  # quality*185
-    # hr, vr = (250/mode)*quality+1, (265/processes_num)*quality
-    # v1 += vr*num
-
-    #print(-h1+(h1+hr), -v1+(v1+vr), quality, mode, processes_num, num)
-    # h1, v1, quality, hr, vr = int(h1), int(v1), int(quality), int(hr), int(vr)
-    #print(-h1+(h1+hr), -v1+(v1+vr), quality, mode, processes_num, num)
-
-    x_qual = int(quality/processes_num)
+    x_qual = round(quality/processes_num)
     y_qual = quality
 
     set_ = [
-        [(belonging(i, j), i, j) for j in np.linspace(y0, y1, y_qual)]
+        [belonging(i, j) for j in np.linspace(y0, y1, quality)]
         for i in np.linspace(x0, x1, x_qual)
     ]
             
@@ -136,21 +117,15 @@ def mp_setup_and_run(senter, length, quality, processes_num, mode):
 if __name__ == '__main__':
     start = time.time()
 
-    with open("output.txt", "w") as file:
-       file.write("")
-
-    senter = np.array([0, 0.5])
+    senter = np.array([-0.5, 0])
     length = 1.5
 
-    factor = 5#10  # quality factor
-    quality = 2**factor  # number of pixels on each side of the set/image
-    processes_num = 3  # number of processes used in multiprocessing
+    factor = 5  # quality factor
+    quality = 4**factor  # number of pixels on each side of the set/image
+    processes_num = 4  # number of processes used in multiprocessing
+
+    # mode is now useless
     mode = 1  # 1 - calculates the whole image; 2 only half, other half - mirror image
-
-    # np.array(set_).shape
-
-    tt = turning(senter, length)
-    gg = [rectangle_division(*tt, 3, i) for i in range(3)]
 
     # multiprocessing
     set_ = mp_setup_and_run(senter, length, quality, processes_num, mode)

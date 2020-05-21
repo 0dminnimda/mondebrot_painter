@@ -48,7 +48,7 @@ if __name__ == '__main__':
     #for i in range(1,11):
     #    drmon(2**i,2,1,1)
 
-    quality = 2**5
+    quality = 2*2*3*4*5
 
     data = np.load(f"mandelbrot_set_{quality}.npy", allow_pickle=True)
 
