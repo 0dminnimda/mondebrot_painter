@@ -3,10 +3,10 @@
 import time
 import cv2 as cv
 import numpy as np
-import colorsys as cs
+from colour import Color
 
 
-def myar_to_img(w, scolor, fcolor, mode):
+def myar_to_img(w, scolor, fcolor, mode, gradient=None):
     hei = len(w)*1
     wid = len(w[0])*1
     ar1 = np.zeros((hei, wid, 3), np.uint8)
@@ -20,6 +20,8 @@ def myar_to_img(w, scolor, fcolor, mode):
             jj += 1
             if j is True:
                 ar1[ii][jj] = scolor
+            elif gradient is not None and isinstance(j, int):
+                ar1[ii][jj] = gradient[j]
     ar2 = np.copy(ar1)
     for i in range(len(ar2)):
         ar2[i][::] = ar2[i][::-1]
@@ -33,10 +35,19 @@ def myar_to_img(w, scolor, fcolor, mode):
         return "error"
 
 
-def gradient(start_rgb, end_rgb, num):
-    start_hsv = cs.rgb_to_hsv(*start_rgb)
-    end_hsv = cs.rgb_to_hsv(*end_rgb)
-    np.linspace()
+def make_gradient(start_rgb, end_rgb, num):
+    start_clr = Color(rgb=norm(start_rgb))
+    end_clr = Color(rgb=norm(end_rgb))
+    colors = [to_rgb(clr) for clr in start_clr.range_to(end_clr, num)]
+    return colors
+
+
+def norm(color):
+    return np.array(color) / 255
+
+
+def to_rgb(color):
+    return np.array(color.rgb)*255
 
 
 if __name__ == '__main__':
@@ -45,14 +56,15 @@ if __name__ == '__main__':
     GRADIENT_END = (0, 191, 255)
     OTHER_COLOR = (255, 255, 255)
 
+
     factor = 5.5
     quality = int(4**factor)
 
     data = np.load(f"mandelbrot_set_{quality}.npy", allow_pickle=True)
-
     set_, mode, quality, max_iter = data
     
-    img = myar_to_img(set_, SET_COLOR, OTHER_COLOR, mode)
+    gradient = make_gradient(GRADIENT_START, GRADIENT_END, max_iter)
+    img = myar_to_img(set_, SET_COLOR, OTHER_COLOR, mode, gradient=gradient)
 
     while 1:
         # cv.namedWindow ( "b" , cv.WINDOW_NORMAL)
