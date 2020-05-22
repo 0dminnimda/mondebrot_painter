@@ -7,11 +7,12 @@ from colour import Color
 
 
 def myar_to_img(w, scolor, fcolor, mode, gradient=None):
-    hei = len(w)*1
-    wid = len(w[0])*1
-    ar1 = np.zeros((hei, wid, 3), np.uint8)
+    height = len(w)*1
+    width = len(w[0])*1
+    ar1 = np.zeros((height, width, 3), np.uint8)
+
     ar1[:] = fcolor
-    ar = np.zeros((hei*2, wid*2, 3), np.uint8)
+    ar = np.zeros((height*2, width*2, 3), np.uint8)
     ii = -1
     for i in w:
         ii += 1
@@ -22,22 +23,35 @@ def myar_to_img(w, scolor, fcolor, mode, gradient=None):
                 ar1[ii][jj] = scolor
             elif gradient is not None and isinstance(j, int):
                 ar1[ii][jj] = gradient[j]
+                
     ar2 = np.copy(ar1)
     for i in range(len(ar2)):
         ar2[i][::] = ar2[i][::-1]
-    ar1 = ar1[0:len(ar1), 0:len(ar1[0])-1]
-    ar = np.concatenate((ar1, ar2), axis=1)
+    
+
     if mode == 1:
         return ar2
+
     elif mode == 2:
+        ar1 = ar1[0:len(ar1), 0:len(ar1[0])-1]
+        ar = np.concatenate((ar1, ar2), axis=1)
+
         return ar
     else:
-        return "error"
+        raise ValueError("wrong mode")
 
 
 def make_gradient(start_rgb, end_rgb, num):
-    start_clr = Color(rgb=norm(start_rgb))
-    end_clr = Color(rgb=norm(end_rgb))
+    if isinstance(start_rgb, Color):
+        start_clr = start_rgb
+    else:
+        start_clr = Color(rgb=norm(start_rgb))
+
+    if isinstance(end_rgb, Color):
+        end_clr = end_rgb
+    else:
+        end_clr = Color(rgb=norm(end_rgb))
+
     colors = [to_rgb(clr) for clr in start_clr.range_to(end_clr, num)]
     return colors
 
@@ -52,8 +66,8 @@ def to_rgb(color):
 
 if __name__ == '__main__':
     SET_COLOR = (0, 0, 0)
-    GRADIENT_START = (255, 165, 0)
-    GRADIENT_END = (0, 191, 255)
+    GRADIENT_START = Color("blue")#(255, 165, 0)
+    GRADIENT_END = Color("white")#(0, 191, 255)
     OTHER_COLOR = (255, 255, 255)
 
 
