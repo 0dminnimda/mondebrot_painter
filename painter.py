@@ -6,54 +6,82 @@ import numpy as np
 from colour import Color
 
 
-def myar_to_img(w, scolor, fcolor, mode, gradient=None):
-    height = len(w)*1
-    width = len(w[0])*1
-    ar1 = np.zeros((height, width, 3), np.uint8)
+def create_img(set_, set_color, other_color, mode, gradient=None):
+    if gradient is not None:
+        max_iter = len(gradient)
 
-    ar1[:] = fcolor
-    ar = np.zeros((height*2, width*2, 3), np.uint8)
-    ii = -1
-    for i in w:
-        ii += 1
-        jj = -1
-        for j in i:
-            jj += 1
-            if j is True:
-                ar1[ii][jj] = scolor
-            elif gradient is not None and isinstance(j, int):
-                ar1[ii][jj] = gradient[j]
-                
-    ar2 = np.copy(ar1)
-    for i in range(len(ar2)):
-        ar2[i][::] = ar2[i][::-1]
-    
+    #set_ = np.array(set_)
+
+    height, width = np.array(set_).shape[:2]
+
+    #height, width, *_ = set_.shape
+
+    ar1 = np.full((height, width, 3), other_color, np.uint8)
+
+    for h in range(height):
+        for w in range(width):
+            value = set_[h][w]
+
+            if value is True:
+                ar1[h, w] = set_color
+            elif gradient is not None and isinstance(value, int):
+                ar1[h, w] = gradient[value % max_iter]
 
     if mode == 1:
-        return ar2
+        return ar1
 
     elif mode == 2:
-        ar1 = ar1[0:len(ar1), 0:len(ar1[0])-1]
-        ar = np.concatenate((ar1, ar2), axis=1)
+        ar2 = ar1[::-1, ::1]
 
-        return ar
+        ar1 = ar1[0: height, 0: width]
+
+        return np.concatenate((ar1, ar2), axis=1)
     else:
         raise ValueError("wrong mode")
 
 
-def make_gradient(start_rgb, end_rgb, num):
-    if isinstance(start_rgb, Color):
-        start_clr = start_rgb
-    else:
-        start_clr = Color(rgb=norm(start_rgb))
+def make_gradient(rgb_array, num, collision=None):
+    colors = []
 
-    if isinstance(end_rgb, Color):
-        end_clr = end_rgb
-    else:
-        end_clr = Color(rgb=norm(end_rgb))
+    max = len(rgb_array)
+    nums = equalspace(num, max)
 
-    colors = [to_rgb(clr) for clr in start_clr.range_to(end_clr, num)]
+    for i in range(len(rgb_array)-1):
+        start_rgb, end_rgb = rgb_array[i], rgb_array[i+1]
+
+        if isinstance(start_rgb, Color):
+            start_clr = start_rgb
+        else:
+            start_clr = Color(rgb=norm(start_rgb))
+
+        if isinstance(end_rgb, Color):
+            end_clr = end_rgb
+        else:
+            end_clr = Color(rgb=norm(end_rgb))
+
+
+        if collision is None:
+            add = [to_rgb(clr) for clr in start_clr.range_to(end_clr, nums[i])]
+        else:
+            if i == 0:
+                add = [to_rgb(clr) for clr in start_clr.range_to(end_clr, nums[i])]
+            else:
+                add = [to_rgb(clr) for clr in end_clr.range_to(start_clr, nums[i]+1)][:-1][::-1]
+
+        colors += add
+
     return colors
+
+
+def equalspace(num, max):
+    linnums = np.linspace(0, num, max, dtype=int)
+
+    nums = []
+
+    for i in range(len(linnums)-1):
+        nums += [linnums[i+1]-linnums[i]]
+
+    return nums
 
 
 def norm(color):
@@ -65,11 +93,14 @@ def to_rgb(color):
 
 
 if __name__ == '__main__':
-    SET_COLOR = (0, 0, 0)
-    GRADIENT_START = Color("blue")#(255, 165, 0)
-    GRADIENT_END = Color("white")#(0, 191, 255)
-    OTHER_COLOR = (255, 255, 255)
-
+    SET_COLOR = (0, 0, 0) #to_rgb(Color("green"))#
+    GRADIENT_COLORS = [
+        
+        #Color("DeepSkyBlue"),
+        Color("black"),  # Orange
+        Color("white"),  # DeepSkyBlue
+ ]
+    OTHER_COLOR = (255, 255, 255) #(0, 0, 0)#
 
     factor = 5.5
     quality = int(4**factor)
@@ -77,13 +108,29 @@ if __name__ == '__main__':
     data = np.load(f"mandelbrot_set_{quality}.npy", allow_pickle=True)
     set_, mode, quality, max_iter = data
     
-    gradient = make_gradient(GRADIENT_START, GRADIENT_END, max_iter)
-    img = myar_to_img(set_, SET_COLOR, OTHER_COLOR, mode, gradient=gradient)
+    #max_iter = None
+
+    #mode = 2
+
+    if max_iter:
+        clrs = ""
+        for gr_color in GRADIENT_COLORS:
+            clrs += Color(pick_for=gr_color).get_hex()+"_"
+        clrs = clrs[:-1]
+    else:
+        clrs = Color(pick_for=OTHER_COLOR).get_hex()
+
+    gradient = None
+    if max_iter:
+        gradient = make_gradient(GRADIENT_COLORS, max_iter/2)
+    img = create_img(set_, SET_COLOR, OTHER_COLOR, mode, gradient=gradient)
+
+    print("start")
 
     while 1:
         # cv.namedWindow ( "b" , cv.WINDOW_NORMAL)
-        cv.imshow(f"mandelbrot_set_{quality}", img)
-        cv.imwrite(f"mandelbrot_set_{quality}.png", img)
+        cv.imshow(f"mandelbrot_set_{quality}_{clrs}", img)
+        cv.imwrite(f"mandelbrot_set_{quality}_{clrs}.png", img)
         if cv.waitKey(0):# & 0xFF == ord('2'):
             cv.destroyAllWindows()
             break
