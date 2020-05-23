@@ -11,32 +11,22 @@ def create_img(set_, set_color, other_color, mode, gradient=None):
     if gradient is not None:
         max_iter = len(gradient)
 
-    #set_ = np.array(set_)
-
     height, width = np.array(set_).shape[:2]
-
-    #height, width, *_ = set_.shape
-
-    ar1 = np.full((height, width, 3), other_color, np.uint8)
+    img = np.full((height, width, 3), other_color, np.uint8)
 
     for h in range(height):
         for w in range(width):
             value = set_[h][w]
 
             if value is True:
-                ar1[h, w] = set_color
+                img[h, w] = set_color
             elif gradient is not None and isinstance(value, int):
-                ar1[h, w] = gradient[value % max_iter]
+                img[h, w] = gradient[(value + 1) % max_iter]
 
     if mode == 1:
-        return ar1
-
+        return img
     elif mode == 2:
-        ar2 = ar1[::-1, ::1]
-
-        ar1 = ar1[0: height, 0: width]
-
-        return np.concatenate((ar1, ar2), axis=1)
+        return np.concatenate((img, img[:, ::-1]), axis=1)
     else:
         raise ValueError("wrong mode")
 
@@ -95,6 +85,7 @@ def to_rgb(color):
 
 if __name__ == '__main__':
     imgs_path = "imgs"
+    saves_path = "saves"
 
     SET_COLOR = (0, 0, 0) #to_rgb(Color("green"))#
     GRADIENT_COLORS = [
@@ -111,10 +102,11 @@ if __name__ == '__main__':
     factor = 5.5
     quality = int(4**factor)
 
-    data = np.load(f"mandelbrot_set_{quality}.npy", allow_pickle=True)
+    data = np.load(f"{saves_path}\\mandelbrot_set_{quality}.npy", allow_pickle=True)
     set_, mode, quality, max_iter = data
     
     #max_iter = None
+    #mode = 2
 
     if max_iter:
         clrs = ""
