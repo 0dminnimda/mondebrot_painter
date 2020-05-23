@@ -1,5 +1,6 @@
 #!/usr/bin/env python3.8
 
+import os
 import time
 import cv2 as cv
 import numpy as np
@@ -93,14 +94,19 @@ def to_rgb(color):
 
 
 if __name__ == '__main__':
+    imgs_path = "imgs"
+
     SET_COLOR = (0, 0, 0) #to_rgb(Color("green"))#
     GRADIENT_COLORS = [
-        
-        #Color("DeepSkyBlue"),
-        Color("black"),  # Orange
-        Color("white"),  # DeepSkyBlue
+        #Color("black"),
+        #Color("white"),
+        Color("Orange"),
+        Color("DeepSkyBlue"),
  ]
     OTHER_COLOR = (255, 255, 255) #(0, 0, 0)#
+
+    divider = 1
+    collision = None
 
     factor = 5.5
     quality = int(4**factor)
@@ -109,8 +115,6 @@ if __name__ == '__main__':
     set_, mode, quality, max_iter = data
     
     #max_iter = None
-
-    #mode = 2
 
     if max_iter:
         clrs = ""
@@ -122,15 +126,18 @@ if __name__ == '__main__':
 
     gradient = None
     if max_iter:
-        gradient = make_gradient(GRADIENT_COLORS, max_iter/2)
+        gradient = make_gradient(GRADIENT_COLORS, max_iter/divider, collision)
     img = create_img(set_, SET_COLOR, OTHER_COLOR, mode, gradient=gradient)
 
-    print("start")
+    try:
+        os.mkdir(imgs_path)
+    except OSError: pass
+
+    cv.imwrite(f"{imgs_path}\\mandelbrot_set_{quality}_{clrs}.png", img)
 
     while 1:
         # cv.namedWindow ( "b" , cv.WINDOW_NORMAL)
         cv.imshow(f"mandelbrot_set_{quality}_{clrs}", img)
-        cv.imwrite(f"mandelbrot_set_{quality}_{clrs}.png", img)
         if cv.waitKey(0):# & 0xFF == ord('2'):
             cv.destroyAllWindows()
             break
