@@ -12,7 +12,7 @@ def belonging(c, max_iter=100, z=0):
     # Belonging to a set of mandelbrot
 
     for i in range(max_iter):
-        z = z**3 + c
+        z = z**2 + c
 
         if abs(z) >= 2:
             return i
@@ -31,7 +31,7 @@ def turning(senter, length, total, num):
     return x0 + part*num, x0 + part*(num+1), y0, y1
 
 
-def make_set(senter, length, quality, processes_num, num, max_iter, mode, queue=None):
+def make_set(senter, length, quality, processes_num, num, max_iter, queue=None):
     x0, x1, y0, y1 = turning(np.array(senter), length, processes_num, num)
 
     x_qual = round(quality/processes_num)
@@ -50,7 +50,7 @@ def make_set(senter, length, quality, processes_num, num, max_iter, mode, queue=
         return set_
 
 
-def mp_setup_and_run(senter, length, quality, processes_num, max_iter, mode):
+def mp_setup_and_run(senter, length, quality, processes_num, max_iter):
     if processes_num > quality:
         raise ValueError("the number of processes must be greater"\
             " than or equal to the quality number")
@@ -66,7 +66,7 @@ def mp_setup_and_run(senter, length, quality, processes_num, max_iter, mode):
         queue[i] = mp.Queue()
         processes[i] = Process(
             target=make_set,
-            args=[senter, length, quality, processes_num, i, max_iter, mode, queue[i]],
+            args=[senter, length, quality, processes_num, i, max_iter, queue[i]],
             daemon=True)
         processes[i].start()
 
@@ -85,24 +85,21 @@ if __name__ == '__main__':
 
     max_iter = 100
 
-    senter = [-0.5, 0] #[-1.7433419053321, 0.0000907687489]
-    length = 1.5*2 # 0.0000001#0.00000000374 #1.5
+    senter = [-0.5, 0]
+    length = 1.5
 
     factor = 5.5  # quality factor
     quality = int(4**factor)  # number of pixels on each side of the set/image
     processes_num = 4  # number of processes used in multiprocessing
 
-    # mode is now useless
-    mode = 1  # 1 - calculates the whole image; 2 only half, other half - mirror image
-
     # multiprocessing
-    set_ = mp_setup_and_run(senter, length, quality, processes_num, max_iter, mode)
+    set_ = mp_setup_and_run(senter, length, quality, processes_num, max_iter)
 
     try:
         os.mkdir(saves_path)
     except OSError: pass
     
-    np.save(f"{saves_path}\\mandelbrot_set_{quality}", [set_, mode, quality, max_iter])
+    np.save(f"{saves_path}\\mandelbrot_set_{quality}", [set_, quality, max_iter])
 
     end = time.time() - start
     print(f"{quality}: {end} sec")

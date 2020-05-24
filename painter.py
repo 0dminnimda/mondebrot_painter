@@ -7,7 +7,7 @@ import numpy as np
 from colour import Color
 
 
-def create_img(set_, set_color, other_color, mode, gradient=None):
+def create_img(set_, set_color, other_color, gradient=None, mode=1):
     if gradient is not None:
         max_iter = len(gradient)
 
@@ -82,6 +82,10 @@ def norm(color):
 def to_rgb(color):
     return np.array(color.rgb)*255
 
+"""
+TODO:
+- make rainbow gardient funcion
+"""
 
 if __name__ == '__main__':
     imgs_path = "imgs"
@@ -103,7 +107,7 @@ if __name__ == '__main__':
     quality = int(4**factor)
 
     data = np.load(f"{saves_path}\\mandelbrot_set_{quality}.npy", allow_pickle=True)
-    set_, mode, quality, max_iter = data
+    set_, quality, max_iter = data
     
     #max_iter = None
     #mode = 2
@@ -119,7 +123,8 @@ if __name__ == '__main__':
     gradient = None
     if max_iter:
         gradient = make_gradient(GRADIENT_COLORS, max_iter/divider, collision)
-    img = create_img(set_, SET_COLOR, OTHER_COLOR, mode, gradient=gradient)
+
+    img = create_img(set_, SET_COLOR, OTHER_COLOR, gradient=gradient)
 
     try:
         os.mkdir(imgs_path)
