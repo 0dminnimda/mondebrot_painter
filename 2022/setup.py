@@ -1,7 +1,8 @@
 import os
 from glob import glob
 
-from setuptools import find_packages, setup
+from Cython.Build import cythonize
+from setuptools import Extension, find_packages, setup
 
 from mandelbrot_painter import __name__, __version__
 
@@ -28,7 +29,12 @@ setup(
     packages=find_packages(),
     license="MIT",
     install_requires=requirements.pop("basic"),
-    python_requires="~=3.10",
+    python_requires="~=3.9",
     extras_require=requirements,
     package_data={__name__: ["py.typed"]},
+    ext_modules=cythonize(
+        "mandelbrot_painter/*.pyx",
+        language_level=3,
+        annotate=True,
+    ),
 )
