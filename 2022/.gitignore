@@ -1,2 +1,7 @@
 __pycache__/
 .mypy_cache\
+build/
+*.egg-info/
+*.pyd
+*.html
+*.c
