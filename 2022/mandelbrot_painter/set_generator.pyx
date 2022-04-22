@@ -22,12 +22,11 @@ cdef inline complex_t function(complex_t z, complex_t c):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef np.ndarray[int, ndim=2] compute_set(complex_mem c, int max_iter=100):
+cdef np.ndarray[int, ndim=2] compute_set_(complex_mem c, int max_iter):
     cdef complex_mem z = np.zeros_like(c)
     cdef mandelbrot_set set = np.zeros((c.shape[0], c.shape[1]), dtype=np.int32)
 
-    cdef Py_ssize_t x, y
-    cdef int i
+    cdef Py_ssize_t x, y, i
     cdef complex_t res
 
     for i in range(1, max_iter + 1):
@@ -39,3 +38,7 @@ cpdef np.ndarray[int, ndim=2] compute_set(complex_mem c, int max_iter=100):
                         set[x, y] = i
 
     return np.asarray(set)
+
+
+def compute_set(c, max_iter=100):
+    return compute_set_(c, max_iter)
