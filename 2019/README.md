@@ -1,4 +1,4 @@
-# 2019
+# 2019 🔥
 
 My first visualization of the Mandelbrot Set
 

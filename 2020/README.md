@@ -1,4 +1,4 @@
-# 2020
+# 2020 🦠
 
 My attempt to improve my first visualization of the Mandelbrot set and compare how much progress I have made
 
