@@ -18,6 +18,15 @@ with open("README.md") as file:
 
 github_link = "https://github.com/0dminnimda/mondebrot_painter"
 
+
+extensions = [
+    Extension(
+        "*", ["mandelbrot_painter/*.pyx"],
+        extra_compile_args=["-O3", "-ffast-math", "-march=native", "-fopenmp"],
+    ),
+]
+
+
 setup(
     name=__name__,
     version=__version__,
@@ -34,9 +43,9 @@ setup(
     extras_require=requirements,
     package_data={__name__: ["py.typed"]},
     ext_modules=cythonize(
-        "mandelbrot_painter/*.pyx",
+        extensions,
         language_level=3,
-        annotate=True,
+        # annotate=True,
     ),
     include_dirs=[np.get_include()],
 )
