@@ -1,3 +1,5 @@
+from time import perf_counter
+
 import numpy as np
 from colour import Color
 from mandelbrot_painter.set_generator import create_grid, compute_set
@@ -13,14 +15,23 @@ def arrprint(arr):
 # arrprint(compute_set(create_grid(-1+6j, 1, 2, dencity=3, magnification=1.5)))
 # arrprint(compute_set(create_grid(-0.5+0j, 3, 2, dencity=30), 9))
 
-max_iter = 50
+max_iter = 20
 
-set = compute_set(create_grid(-0.75+0j, 3, 2, dencity=1000), max_iter)
+start = perf_counter()
+grid = create_grid(-0.75+0j, 3, 2, dencity=1000)
 
+start_set = perf_counter()
+set = compute_set(grid, max_iter)
+
+start_palette = perf_counter()
 palette = make_palette(max_iter + 1, Color("black"), Color("green"))
 # print(palette, len(palette))
 
+start_save = perf_counter()
 save_set_as_image(set, palette, "test_img.png")
 
-breakpoint
+end = perf_counter()
+print(f"Times: whole {end - start}, set {start_palette - start_set}, ",
+      f"palette {start_save - start_palette}, save {end - start_save}")
 
+breakpoint
