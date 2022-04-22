@@ -1,6 +1,7 @@
 import os
 from glob import glob
 
+import numpy as np
 from Cython.Build import cythonize
 from setuptools import Extension, find_packages, setup
 
@@ -37,4 +38,5 @@ setup(
         language_level=3,
         annotate=True,
     ),
+    include_dirs=[np.get_include()],
 )
