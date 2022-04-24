@@ -1,6 +1,6 @@
 import numpy as np
 cimport cython
-# from cython.parallel import prange
+from cython.parallel import prange
 
 ctypedef complex complex_t
 ctypedef complex_t [:, :] complex_mem
@@ -15,7 +15,7 @@ cpdef complex_mem create_grid(complex_t point, int width, int height,
     return xv + yv * 1j + point
 
 
-cdef inline complex_t function(complex_t z, complex_t c):
+cdef inline complex_t function(complex_t z, complex_t c) nogil:
     return z**2 + c
 
 
@@ -28,7 +28,7 @@ cdef mandelbrot_set compute_set_(complex_mem c, int max_iter):
     cdef Py_ssize_t x, y, i
     cdef complex_t res
 
-    for i in range(1, max_iter + 1):
+    for i in prange(1, max_iter + 1, nogil=True):
         for x in range(set.shape[0]):
             for y in range(set.shape[1]):
                 if set[x, y] == 0:

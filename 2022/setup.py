@@ -22,7 +22,7 @@ github_link = "https://github.com/0dminnimda/mondebrot_painter"
 extensions = [
     Extension(
         "*", ["mandelbrot_painter/*.pyx"],
-        extra_compile_args=["-O3", "-ffast-math", "-march=native", "-fopenmp"],
+        extra_compile_args=["-O3", "/openmp", "-fopenmp"],#"-ffast-math", "-march=native", ],
     ),
 ]
 
