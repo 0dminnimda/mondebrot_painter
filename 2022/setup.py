@@ -47,5 +47,4 @@ setup(
         language_level=3,
         # annotate=True,
     ),
-    include_dirs=[np.get_include()],
 )

@@ -1,5 +1,4 @@
 import numpy as np
-cimport numpy as np
 cimport cython
 # from cython.parallel import prange
 
@@ -22,7 +21,7 @@ cdef inline complex_t function(complex_t z, complex_t c):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cdef np.ndarray[int, ndim=2] compute_set_(complex_mem c, int max_iter):
+cdef mandelbrot_set compute_set_(complex_mem c, int max_iter):
     cdef complex_mem z = np.zeros_like(c)
     cdef mandelbrot_set set = np.zeros((c.shape[0], c.shape[1]), dtype=np.int32)
 
@@ -37,8 +36,8 @@ cdef np.ndarray[int, ndim=2] compute_set_(complex_mem c, int max_iter):
                     if res.real**2 + res.imag**2 > 4:
                         set[x, y] = i
 
-    return np.asarray(set)
+    return set
 
 
 def compute_set(c, max_iter=100):
-    return compute_set_(c, max_iter)
+    return np.asarray(compute_set_(c, max_iter))
