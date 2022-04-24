@@ -22,7 +22,7 @@ github_link = "https://github.com/0dminnimda/mondebrot_painter"
 extensions = [
     Extension(
         "*", ["mandelbrot_painter/*.pyx"],
-        extra_compile_args=["-O3", "/openmp", "-fopenmp"],#"-ffast-math", "-march=native", ],
+        extra_compile_args=["/O3", "/openmp", "-O3", "-fopenmp"],#"-ffast-math", "-march=native", ],
     ),
 ]
 
@@ -45,6 +45,11 @@ setup(
     ext_modules=cythonize(
         extensions,
         language_level=3,
-        # annotate=True,
+        annotate=True,
+        compiler_directives={
+            "warn.unused": True
+        },
     ),
 )
+
+# venv/Scripts/python -m pip install -e .
