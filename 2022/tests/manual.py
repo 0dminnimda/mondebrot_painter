@@ -6,32 +6,34 @@ from mandelbrot_painter.painter import make_palette, save_set_as_image
 from mandelbrot_painter.set_generator import compute_set, create_grid
 
 
-def arrprint(arr):
-    for item in arr:
-        print(*item)
-    print()
+def timer(f):
+    def wrapper(*args, **kwargs):
+        print("Starting", f.__name__)
+        start = perf_counter()
+        r = f(*args, **kwargs)
+        print("Finishing", f.__name__, "time:", perf_counter() - start)
+        return r
+    return wrapper
 
 
-# arrprint(compute_set(create_grid(-1+6j, 1, 2, dencity=3, magnification=1.5)))
-# arrprint(compute_set(create_grid(-0.5+0j, 3, 2, dencity=30), 9))
+create_grid = timer(create_grid)
+compute_set = timer(compute_set)
+make_palette = timer(make_palette)
+save_set_as_image = timer(save_set_as_image)
 
-max_iter = 50
+max_iter = 35
 
-start = perf_counter()
-grid = create_grid(-0.75+0j, 3, 2, dencity=1000, magnification=1.25)
+grid = create_grid(
+    -0.75+0j,
+    13, 10, dencity=100, magnification=0.2)
+# grid = create_grid(
+#     -0.170337168373994-1.065060284305098j,
+#     13, 10, dencity=100, magnification=1/5000000000000)
 
-start_set = perf_counter()
 set = compute_set(grid, max_iter)
 
-start_palette = perf_counter()
-palette = make_palette(max_iter + 3, Color("black"), Color("green"), Color("black"), Color("green"), Color("green"))
-# print(palette, len(palette))
+palette = make_palette(max_iter, Color("black"), Color("white"))
 
-start_save = perf_counter()
 save_set_as_image(set, palette, "test_img.png")
-
-end = perf_counter()
-print(f"Times: whole {end - start}, set {start_palette - start_set}, ",
-      f"palette {start_save - start_palette}, save {end - start_save}")
 
 breakpoint
