@@ -89,7 +89,7 @@ cdef int [:] compute_set_corrupted_x(const complex_t [:] c, int max_iter):
 
 def compute_set(c: NDArray, max_iter: int = 100, algorithm: str = "normal") -> NDArray:
     if algorithm == "normal":
-        return np.asarray(compute_values(c.flatten(), max_iter)).reshape(c.shape)
+        return np.asarray(compute_values(c.ravel(), max_iter)).reshape(c.shape)
     elif algorithm == "corrupted_xy":
         return np.asarray(compute_set_corrupted_xy(c, max_iter))
     elif algorithm == "corrupted_x":
