@@ -6,3 +6,4 @@ build/
 *.html
 *.c
 *.cpp
+.vscode/
