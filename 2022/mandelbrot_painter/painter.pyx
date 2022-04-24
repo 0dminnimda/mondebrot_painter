@@ -28,11 +28,11 @@ def make_palette(max_iter: int, *colors: Color,
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef paint_the_set(int [:, :] set, double [:, :] palette):
+cpdef paint_the_set(const int [:, :] set, const double [:, :] palette):
     cdef stdint.uint8_t [:, :, :] mapped_set = np.zeros((set.shape[0], set.shape[1], 3), dtype=np.uint8)
 
     cdef Py_ssize_t i, j, k
-    cdef double [:] color
+    cdef const double [:] color
 
     for i in range(set.shape[0]):
         for j in range(set.shape[1]):

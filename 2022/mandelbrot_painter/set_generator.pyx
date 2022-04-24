@@ -36,8 +36,8 @@ cdef int number_of_iterations_for_the_point(complex_t z, complex_t c, int max_it
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cdef int [:] compute_values(complex_t [:] c, int max_iter):
-    cdef complex_t [:] z = np.zeros_like(c)
+cdef int [:] compute_values(const complex_t [:] c, int max_iter):
+    # cdef complex_t [:] z = np.zeros_like(c)
     cdef int [:] set = np.zeros((c.shape[0],), dtype=np.int32)
 
     cdef Py_ssize_t x
@@ -50,7 +50,7 @@ cdef int [:] compute_values(complex_t [:] c, int max_iter):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cdef int [:, :] compute_set_corrupted_xy(complex_t [:, :] c, int max_iter):
+cdef int [:, :] compute_set_corrupted_xy(const complex_t [:, :] c, int max_iter):
     cdef complex_t [:, :] z = np.zeros_like(c)
     cdef int [:, :] set = np.zeros((c.shape[0], c.shape[1]), dtype=np.int32)
 
@@ -70,7 +70,7 @@ cdef int [:, :] compute_set_corrupted_xy(complex_t [:, :] c, int max_iter):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cdef int [:] compute_set_corrupted_x(complex_t [:] c, int max_iter):
+cdef int [:] compute_set_corrupted_x(const complex_t [:] c, int max_iter):
     cdef complex_t [:] z = np.zeros_like(c)
     cdef int [:] set = np.zeros((c.shape[0],), dtype=np.int32)
 
