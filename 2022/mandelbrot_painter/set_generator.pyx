@@ -23,6 +23,7 @@ cdef inline bint out_of_bounds(complex_t x) nogil:
     cdef double real = x.real
     cdef double imag = x.imag
     return real*real + imag*imag > 4
+    # return abs(x.real) + abs(x.imag) > 8**0.5
 
 
 cdef int number_of_iterations_for_the_point(complex_t z, complex_t c, int max_iter) nogil:
@@ -41,7 +42,6 @@ cdef int number_of_iterations_for_the_point(complex_t z, complex_t c, int max_it
 cdef int [:] compute_values(const complex_t [:] c, int max_iter):
     # cdef complex_t [:] z = np.zeros_like(c)
     cdef int [:] set = np.zeros((c.shape[0],), dtype=np.int32)
-
     cdef Py_ssize_t x
 
     for x in prange(set.shape[0], nogil=True):
