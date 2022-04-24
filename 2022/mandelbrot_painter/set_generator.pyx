@@ -20,7 +20,9 @@ cdef inline complex_t function(complex_t z, complex_t c) nogil:
 
 
 cdef inline bint out_of_bounds(complex_t x) nogil:
-    return x.real*x.real + x.imag*x.imag > 4
+    cdef double real = x.real
+    cdef double imag = x.imag
+    return real*real + imag*imag > 4
 
 
 cdef int number_of_iterations_for_the_point(complex_t z, complex_t c, int max_iter) nogil:
