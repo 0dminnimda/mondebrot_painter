@@ -37,7 +37,8 @@ cpdef paint_the_set(const int [:, :] set, const double [:, :] palette):
     for i in range(set.shape[0]):
         for j in range(set.shape[1]):
             color = palette[set[i, j]]
-            for k in range(3)[::-1]:
-                mapped_set[i, j, k] = <stdint.uint8_t>(color[k] * 255)
+            mapped_set[i, j, 0] = <stdint.uint8_t>(color[0] * 255)
+            mapped_set[i, j, 1] = <stdint.uint8_t>(color[1] * 255)
+            mapped_set[i, j, 2] = <stdint.uint8_t>(color[2] * 255)
 
     return np.asarray(mapped_set)
