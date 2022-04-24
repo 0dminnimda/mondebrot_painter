@@ -1,7 +1,8 @@
 from time import perf_counter
 
+import cv2 as cv
 from colour import Color
-from mandelbrot_painter.painter import make_palette, save_set_as_image
+from mandelbrot_painter.painter import make_palette, paint_the_set
 from mandelbrot_painter.set_generator import compute_set, create_grid
 
 
@@ -18,20 +19,22 @@ def timer(f):
 create_grid = timer(create_grid)
 compute_set = timer(compute_set)
 make_palette = timer(make_palette)
-save_set_as_image = timer(save_set_as_image)
+paint_the_set = timer(paint_the_set)
+imwrite = timer(cv.imwrite)
 
-max_iter = 55
+max_iter = 80
 
-grid = create_grid(
-    -0.75+0j,
-    13, 10, dencity=100, magnification=0.2)
 # grid = create_grid(
-#     -0.170337168373994-1.065060284305098j,
-#     13, 10, dencity=100, magnification=1/5000000000000)
-
-set = compute_set(grid, max_iter)
+#     -0.75+0j,
+#     width=13, height=10,
+#     dencity=100, magnification=0.2)
+grid = create_grid(
+    -0.170337168373994-1.065060284305098j,
+    width=13, height=10,
+    dencity=100, magnification=1/50000000000000)
 
 palette = make_palette(max_iter, Color("black"), Color("white"))
+image = paint_the_set(compute_set(grid, max_iter), palette)
 
-name = "black_n_white"
-save_set_as_image(set, palette, f"images/{name}.png")
+name = "test_depth"
+imwrite(f"images/{name}.png", image)
