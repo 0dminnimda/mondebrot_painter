@@ -16,14 +16,21 @@ cpdef create_grid(complex_t point, int width, int height,
 
 
 cdef inline complex_t function(complex_t z, complex_t c) nogil:
-    return z**2 + c
+    return z*z + c
+
+
+cdef inline bint out_of_bounds(complex_t x) nogil:
+    return x.real*x.real + x.imag*x.imag > 4
 
 
 cdef int number_of_iterations_for_the_point(complex_t z, complex_t c, int max_iter) nogil:
+    cdef Py_ssize_t i
+
     for i in range(max_iter + 1):
-        if z.real**2 + z.imag**2 > 4:
+        if out_of_bounds(z):
             return i
         z = function(z, c)
+
     return 0
 
 
@@ -33,11 +40,10 @@ cdef int [:] compute_values(complex_t [:] c, int max_iter):
     cdef complex_t [:] z = np.zeros_like(c)
     cdef int [:] set = np.zeros((c.shape[0],), dtype=np.int32)
 
-    cdef Py_ssize_t x, i
-    cdef complex_t res
+    cdef Py_ssize_t x
 
     for x in prange(set.shape[0], nogil=True):
-        set[x] = number_of_iterations_for_the_point(z[x], c[x], max_iter)
+        set[x] = number_of_iterations_for_the_point(0, c[x], max_iter)
 
     return set
 
@@ -56,7 +62,7 @@ cdef int [:, :] compute_set_corrupted_xy(complex_t [:, :] c, int max_iter):
             for y in range(set.shape[1]):
                 if set[x, y] == 0:
                     res = z[x, y] = function(z[x, y], c[x, y])
-                    if res.real**2 + res.imag**2 > 4:
+                    if out_of_bounds(res):
                         set[x, y] = i
 
     return set
@@ -75,7 +81,7 @@ cdef int [:] compute_set_corrupted_x(complex_t [:] c, int max_iter):
         for x in range(set.shape[0]):
             if set[x] == 0:
                 res = z[x] = function(z[x], c[x])
-                if res.real**2 + res.imag**2 > 4:
+                if out_of_bounds(res):
                     set[x] = i
 
     return set
