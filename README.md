@@ -5,11 +5,11 @@
 This repository serves more as a way to see my progress and "evolution" as a programmer/software engineer.  
 Not to say that I am not interested in the topic, it is very close to my heart! ❤
 
-![Mandelbrot Set With Radial Stripes](https://github.com/0dminnimda/mondebrot_painter/blob/master/2019/infinite_4.png?raw=true)
+![Corrupted Mandelbrot Set](https://github.com/0dminnimda/mondebrot_painter/blob/master/2022/images/corrupted_xy.png?raw=true)
 
 Just look at my progile picture on github. It'll tell you everything.
 
-![Corrupted Mandelbrot Set](https://github.com/0dminnimda/mondebrot_painter/blob/master/2022/images/corrupted_xy.png?raw=true)
+![Mandelbrot Set With Radial Stripes](https://github.com/0dminnimda/mondebrot_painter/blob/master/2019/infinite_4.png?raw=true)
 
 Look in the corresponding folder to find my implementation of the corresponding year.
 
