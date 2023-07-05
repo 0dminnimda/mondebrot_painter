@@ -1,0 +1,32 @@
+diff --git a/2019/offic.py b/2019/offic.py
+index 7311f16..0d209dc 100644
+--- a/2019/offic.py
++++ b/2019/offic.py
+@@ -24,6 +24,8 @@ def mon(r, i, n=100):
+     try:
+         for i in range(n):
+             z = f(z, c)
++            if z[0] >= 1e+200 and z[1] >= 1e+200:
++                return True
+     except OverflowError:
+         p = False
+     else:
+@@ -34,7 +36,7 @@ def mon(r, i, n=100):
+ def drmon(qlt, devi1, dell, part, qq=0):
+     part -= 1
+     # qlt*=2
+-    sqq = sqrt(qlt)
++    # sqq = sqrt(qlt)
+     de = 100*qlt
+     h1 = de*-1.25
+     v1 = de*-2.1  # qlt*185
+@@ -116,7 +118,7 @@ if __name__ == '__main__':
+         print(end_0, "sec")
+ 
+         # cv.namedWindow ( "b" , cv.WINDOW_NORMAL)
+-        cv.imshow(f"mon_img_{qual}", img)
+-        cv.imwrite(f"mon_img_{qual}.png", img)
++        cv.imshow(f"infinite_{qual}", img)
++        cv.imwrite(f"infinite_{qual}.png", img)
+         cv.waitKey(0)
+     cv.destroyAllWindows()
