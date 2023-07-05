@@ -1,0 +1,90 @@
+diff --git a/2022/mandelbrot_painter/painter.pyx b/2022/mandelbrot_painter/painter.pyx
+index 6444bd2..5e729ba 100644
+--- a/2022/mandelbrot_painter/painter.pyx
++++ b/2022/mandelbrot_painter/painter.pyx
+@@ -42,3 +42,11 @@ cpdef paint_the_set(const int [:, :] set, const double [:, :] palette):
+             mapped_set[i, j, 2] = <stdint.uint8_t>(color[2] * 255)
+ 
+     return np.asarray(mapped_set)
++
++
++# cpdef save_set_as_image(np.ndarray[int, ndim=2] set, np.ndarray[double, ndim=2] palette, str path):
++#     cdef np.ndarray[double, ndim=2] mapped_array
++#     cdef np.ndarray[double, ndim=3] mapped_set
++#     mapped_array = np.array([palette[value][::-1] for value in set.flatten()])
++#     mapped_set = (mapped_array).reshape((set.shape[0], set.shape[1], 3))
++#     cv.imwrite(path, (mapped_set * 255).astype(np.uint8))
+diff --git a/2022/mandelbrot_painter/set_generator.pyx b/2022/mandelbrot_painter/set_generator.pyx
+index 93ec039..f48d452 100644
+--- a/2022/mandelbrot_painter/set_generator.pyx
++++ b/2022/mandelbrot_painter/set_generator.pyx
+@@ -2,11 +2,36 @@ import numpy as np
+ from cython.parallel import prange
+ from numpy.typing import NDArray
+ 
++# cimport libcpp.complex
++# from libcpp.complex cimport cimag, creal
++# from cpython.complex cimport complex
+ cimport cython
++from libc.math cimport abs
++# cimport numpy as np
+ 
++# https://mpmath.org/doc/current/functions/gamma.html?highlight=fac
++# https://gmpy2.readthedocs.io/en/latest/intro.html#installation
++# cdef extern from "<complex.h>" nogil:
++    # struct _C_double_complex:
++    #     pass
++
++    # ctypedef _C_double_complex _Dcomplex
++
++    # _Dcomplex _Cmulcc(_Dcomplex _X, _Dcomplex _Y);
++
++
++# https://en.wikipedia.org/wiki/List_of_arbitrary-precision_arithmetic_software
++# https://www.davidhbailey.com/dhbsoftware/
++# https://www.ginac.de/CLN/
++# https://www.boost.org/doc/libs/1_79_0/libs/multiprecision/doc/html/index.html
++# GMP? MPFR?
+ ctypedef complex complex_t
++# ctypedef np.complex128_t complex_t
+ 
+ 
++# https://jakevdp.github.io/blog/2012/08/08/memoryview-benchmarks/
++# https://developer.nvidia.com/blog/accelerating-python-on-gpus-with-nvc-and-cython/
++# https://github.com/cython/cython/issues/3144
+ cpdef create_grid(complex_t point, int width, int height,
+                   int dencity=1, double magnification=1.):
+     xv, yv = np.meshgrid(
+@@ -90,6 +115,11 @@ cdef int [:] compute_set_corrupted_x(const complex_t [:] c, int max_iter):
+ 
+ 
+ def compute_set(c: NDArray, max_iter: int = 100, algorithm: str = "normal") -> NDArray:
++    # cdef complex_t t1
++    # cdef double t2
++    # print(cython.typeof(t1), cython.typeof(t2), cython.typeof(1+5j))
++    # print(cython.sizeof(complex_t), cython.sizeof(double), cython.sizeof(1+5j))
++
+     if algorithm == "normal":
+         return np.asarray(compute_values(c.ravel(), max_iter)).reshape(c.shape)
+     elif algorithm == "corrupted_xy":
+diff --git a/2022/requirements/basic.txt b/2022/requirements/basic.txt
+index 1964452..4343c57 100644
+--- a/2022/requirements/basic.txt
++++ b/2022/requirements/basic.txt
+@@ -1,3 +1,4 @@
+ numpy
+ colour
+ opencv-python
++# gmpy2
+diff --git a/2022/setup.py b/2022/setup.py
+index 4e8e9fd..b26bf36 100644
+--- a/2022/setup.py
++++ b/2022/setup.py
+@@ -23,6 +23,7 @@ extensions = [
+     Extension(
+         "*", ["mandelbrot_painter/*.pyx"],
+         extra_compile_args=["/O3", "/openmp", "-O3", "-fopenmp"],#"-ffast-math", "-march=native", ],
++        # extra_link_args=['-lgomp']
+     ),
+ ]
+ 
