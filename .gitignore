@@ -1,0 +1,8 @@
+*.a
+*.o
+*.obj
+*.out
+*.pdb
+*.ilk
+*.lib
+*.exp
