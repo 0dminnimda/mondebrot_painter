@@ -1,0 +1,15 @@
+BasedOnStyle: Google
+IndentWidth: 4
+ColumnLimit: 90
+DerivePointerAlignment: false
+PointerAlignment: Right
+AlwaysBreakTemplateDeclarations: true
+NamespaceIndentation: All
+IndentPPDirectives: BeforeHash
+AccessModifierOffset: -4
+AllowShortIfStatementsOnASingleLine: true
+AllowShortBlocksOnASingleLine: true
+BraceWrapping:
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
