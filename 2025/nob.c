@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
     nob_cmd_append(&cmd, "main.cpp");
     nob_cmd_append(&cmd, "-lraylib");
 
-    nob_cmd_append(&cmd, "-O2");
+    nob_cmd_append(&cmd, "-O2", "-Wno-unused-const-variable");
 
     if (!nob_cmd_run_sync(cmd)) return 1;
     return 0;

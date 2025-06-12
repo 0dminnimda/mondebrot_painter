@@ -11,19 +11,30 @@ using u16 = uint16_t;
 using u8 = uint8_t;
 using Point = std::complex<long double>;
 
-#define COOL_SCHEMA 0
+#define COOL_SCHEMA 1
 #define SLOW_SCHEMA 1
+#define SQUARE_BOUNDS 1
+
 constexpr int screen_size = 800;
 constexpr u32 max_retries = 200;
 constexpr u16 points_per_side = 400;
+
+constexpr long double circle_boundary = 4; // 2**2
+constexpr long double square_boundary = 2.8284271247461903; // 8**0.5
 
 
 u32 how_many_steps_to_diverge(Point point, u32 max_retries) {
     Point z = point;
 
     for (u32 step = 0; step < max_retries; step++) {
-        if (std::norm(z) > 2*2) {
-            // outside the cirle of radius 2 will always diverge
+        if (
+#if SQUARE_BOUNDS
+            std::abs(z.real()) + std::abs(z.imag()) > square_boundary
+#else
+            std::norm(z) > circle_boundary
+#endif
+        ) {
+            // points outside will always diverge
             return step;
         }
         z = z*z + point;
