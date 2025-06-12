@@ -1,6 +1,7 @@
 #include <complex>
 #include <stdio.h>
 #include <stdint.h>
+#include <math.h>
 #include "raylib.h"
 
 using i64 = int64_t;
@@ -31,26 +32,53 @@ float get_mondelbrot_gradient(Point point, u32 max_retries) {
 }
 
 constexpr int screen_size = 800;
-constexpr u32 max_retries = 100;
-constexpr float frame_width = 4;
+constexpr u32 max_retries = 200;
+constexpr u16 points_per_side = 400;
+
+// TODO: support resizing window
 
 int main() {
-    u16 side_length = 400;
+    float frame_width = 4;
+    Point center(-1, 0);
+
+    constexpr float spacing = (float)screen_size / points_per_side;
 
     InitWindow(screen_size, screen_size, "Mondelbrot Set Explorer");
 
-    const float spacing = (float)screen_size / side_length;
-
     while (!WindowShouldClose()) {
+        float wheel;
+
+        if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_K)) {
+            wheel = +1.0f;
+        } else if (IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_J)) {
+            wheel = -1.0f;
+        } else {
+            wheel = GetMouseWheelMove();
+        }
+
+        if (wheel != 0) {
+            frame_width = expf(logf(frame_width) + wheel*0.1f);
+        }
+
+
+        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+            Vector2 delta_pixels = GetMouseDelta();
+            center -= Point(
+                delta_pixels.x * frame_width / screen_size,
+                delta_pixels.y * frame_width / screen_size
+            );
+        }
+
         BeginDrawing();
             ClearBackground(BLACK);
 
-            for (size_t x = 0; x < side_length; x++) {
-                for (size_t y = 0; y < side_length; y++) {
+            for (size_t x = 0; x < points_per_side; x++) {
+                for (size_t y = 0; y < points_per_side; y++) {
                     Point point(
-                        ((float)x - side_length / 2) * frame_width / side_length,
-                        ((float)y - side_length / 2) * frame_width / side_length
+                        ((float)x - (float)points_per_side / 2) * frame_width / points_per_side,
+                        ((float)y - (float)points_per_side / 2) * frame_width / points_per_side
                     );
+                    point += center;
                     float scale = get_mondelbrot_gradient(point, max_retries);
                     Color color = {0, (u8)(scale*255), 0, 255};
 #if 0
@@ -60,8 +88,6 @@ int main() {
 #endif
                 }
             }
-
-            printf("frame done\n");
         EndDrawing();
     }
 
