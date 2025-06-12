@@ -6,7 +6,7 @@ Later on I may try to also give this application an ability to explore infinitel
 
 ## Dependancies
 
-You need to have [**raylib**](https://www.raylib.com/index.html) installed, so your compiler can pick it up in the process of building.
+You need to have [**raylib**](https://www.raylib.com/index.html) v5 installed, so your compiler can pick it up in the process of building.
 You can install it via package manager, get precompiled binaries or compile it from scratch.
 
 ## Build
