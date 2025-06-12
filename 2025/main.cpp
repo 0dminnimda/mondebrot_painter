@@ -26,9 +26,7 @@ u32 how_many_steps_to_diverge(Point point, u32 max_retries) {
 }
 
 float get_mondelbrot_gradient(Point point, u32 max_retries) {
-    u32 steps = how_many_steps_to_diverge(point, max_retries);
-    // + 1 since we need to include both 0 and max_retries
-    return (float)steps / (max_retries + 1);
+    return (float)how_many_steps_to_diverge(point, max_retries) / max_retries;
 }
 
 constexpr int screen_size = 800;
