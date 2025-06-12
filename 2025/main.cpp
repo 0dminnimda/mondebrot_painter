@@ -88,6 +88,10 @@ int main() {
 #endif
                 }
             }
+
+            char fps_buffer[16];
+            sprintf(fps_buffer, "fps: %d", GetFPS());
+            DrawText(fps_buffer, screen_size * 0.85, screen_size * 0.05, 20, RED);
         EndDrawing();
     }
 
