@@ -49,9 +49,9 @@ int main() {
         float wheel;
 
         if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_K)) {
-            wheel = +1.0f;
+            wheel = GetFrameTime() * 64;
         } else if (IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_J)) {
-            wheel = -1.0f;
+            wheel = -GetFrameTime() * 64;
         } else {
             wheel = GetMouseWheelMove();
         }
