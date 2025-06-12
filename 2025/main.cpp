@@ -11,9 +11,10 @@ using u16 = uint16_t;
 using u8 = uint8_t;
 using Point = std::complex<long double>;
 
-#define COOL_SCHEMA 1
+#define COOL_SCHEMA 0
 #define SLOW_SCHEMA 1
-#define SQUARE_BOUNDS 1
+#define SQUARE_BOUNDS 0
+#define JULIA_SET 0
 
 constexpr int screen_size = 800;
 constexpr u32 max_retries = 200;
@@ -21,6 +22,10 @@ constexpr u16 points_per_side = 400;
 
 constexpr long double circle_boundary = 4; // 2**2
 constexpr long double square_boundary = 2.8284271247461903; // 8**0.5
+
+#if JULIA_SET
+Point julia_point(0, 0);
+#endif
 
 
 u32 how_many_steps_to_diverge(Point point, u32 max_retries) {
@@ -37,7 +42,11 @@ u32 how_many_steps_to_diverge(Point point, u32 max_retries) {
             // points outside will always diverge
             return step;
         }
+#if JULIA_SET
+        z = z*z + julia_point;
+#else
         z = z*z + point;
+#endif
     }
 
     return max_retries;
@@ -93,6 +102,16 @@ int main() {
                 delta_pixels.y * frame_width / screen_size
             );
         }
+
+#if JULIA_SET
+        if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
+            Vector2 delta_pixels = GetMouseDelta();
+            julia_point -= Point(
+                delta_pixels.x * frame_width / screen_size,
+                delta_pixels.y * frame_width / screen_size
+            );
+        }
+#endif
 
         BeginDrawing();
             ClearBackground(BLACK);

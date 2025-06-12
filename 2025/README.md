@@ -29,4 +29,5 @@ Now you have `mondex.exe` you can run!
 
 - `Scroll Down` / `Down Arrow` / `J` - Zoom In
 - `Scroll Up`   / `Up Arrow`   / `K` - Zoom Out
-- `Mouse` - moves the set around
+- `Left Mouse` - moves the set around
+- `Right Mouse` - moves the julia set point around
