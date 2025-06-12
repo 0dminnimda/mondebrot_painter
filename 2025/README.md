@@ -27,7 +27,8 @@ Now you have `mondex.exe` you can run!
 
 ## Use
 
-- `Scroll Down` / `Down Arrow` / `J` - Zoom In
-- `Scroll Up`   / `Up Arrow`   / `K` - Zoom Out
+- `Scroll Down` / `Down Arrow` / `j` - Zoom In
+- `Scroll Up`   / `Up Arrow`   / `k` - Zoom Out
 - `Left Mouse` - moves the set around
 - `Right Mouse` - moves the julia set point around
+- `v` - switch mode (mondelbrot set <-> julia set)

@@ -23,12 +23,11 @@ constexpr u16 points_per_side = 400;
 constexpr long double circle_boundary = 4; // 2**2
 constexpr long double square_boundary = 2.8284271247461903; // 8**0.5
 
-#if JULIA_SET
+bool showing_julia_set = false;
 Point julia_point(0, 0);
-#endif
-
 
 u32 how_many_steps_to_diverge(Point point, u32 max_retries) {
+    Point shift = showing_julia_set? julia_point : point;
     Point z = point;
 
     for (u32 step = 0; step < max_retries; step++) {
@@ -42,11 +41,7 @@ u32 how_many_steps_to_diverge(Point point, u32 max_retries) {
             // points outside will always diverge
             return step;
         }
-#if JULIA_SET
-        z = z*z + julia_point;
-#else
-        z = z*z + point;
-#endif
+        z = z*z + shift;
     }
 
     return max_retries;
@@ -95,6 +90,11 @@ int main() {
         }
 
 
+        if (IsKeyPressed(KEY_V)) {
+            showing_julia_set = !showing_julia_set;
+        }
+
+
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
             Vector2 delta_pixels = GetMouseDelta();
             center -= Point(
@@ -103,7 +103,6 @@ int main() {
             );
         }
 
-#if JULIA_SET
         if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
             Vector2 delta_pixels = GetMouseDelta();
             julia_point -= Point(
@@ -111,7 +110,6 @@ int main() {
                 delta_pixels.y * frame_width / screen_size
             );
         }
-#endif
 
         BeginDrawing();
             ClearBackground(BLACK);
