@@ -67,8 +67,8 @@ Color gradient_to_color(float scale) {
 // TODO: support resizing window
 
 int main() {
-    float frame_width = 4;
-    Point center(-1, 0);
+    float frame_width = 2.5;
+    Point center(-0.75, 0);
 
     constexpr float spacing = (float)screen_size / points_per_side;
 
