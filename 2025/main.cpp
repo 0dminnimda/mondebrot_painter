@@ -11,6 +11,13 @@ using u16 = uint16_t;
 using u8 = uint8_t;
 using Point = std::complex<long double>;
 
+#define COOL_SCHEMA 0
+#define SLOW_SCHEMA 1
+constexpr int screen_size = 800;
+constexpr u32 max_retries = 200;
+constexpr u16 points_per_side = 400;
+
+
 u32 how_many_steps_to_diverge(Point point, u32 max_retries) {
     Point z = point;
 
@@ -29,9 +36,18 @@ float get_mondelbrot_gradient(Point point, u32 max_retries) {
     return (float)how_many_steps_to_diverge(point, max_retries) / max_retries;
 }
 
-constexpr int screen_size = 800;
-constexpr u32 max_retries = 200;
-constexpr u16 points_per_side = 400;
+Color gradient_to_color(float scale) {
+#if COOL_SCHEMA
+    if (scale == 1.0) {  // only precicely max_retries
+        return Color{0, 0, 0, 255};
+    }
+    scale = 1/scale;
+#elif SLOW_SCHEMA
+    scale = 1 - (1-scale)*(1-scale);
+#else
+#endif
+    return Color{0, (u8)(scale*255), 0, 255};
+}
 
 // TODO: support resizing window
 
@@ -55,7 +71,7 @@ int main() {
         }
 
         if (wheel != 0) {
-            frame_width = expf(logf(frame_width) + wheel*0.1f);
+            frame_width = std::exp(std::log(frame_width) + wheel*0.1f);
         }
 
 
@@ -78,7 +94,7 @@ int main() {
                     );
                     point += center;
                     float scale = get_mondelbrot_gradient(point, max_retries);
-                    Color color = {0, (u8)(scale*255), 0, 255};
+                    Color color = gradient_to_color(scale);
 #if 0
                     DrawCircle(x * spacing, y * spacing, spacing / 2, color);
 #else
