@@ -14,7 +14,6 @@ using Point = std::complex<long double>;
 #define COOL_SCHEMA 0
 #define SLOW_SCHEMA 1
 #define SQUARE_BOUNDS 0
-#define JULIA_SET 0
 
 constexpr int screen_size = 800;
 constexpr u32 max_retries = 200;
