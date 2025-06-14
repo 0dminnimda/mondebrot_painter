@@ -79,7 +79,7 @@ int main() {
 
     constexpr float spacing = (float)screen_size / points_per_side;
 
-    InitWindow(screen_size, screen_size, "Mondelbrot Set Explorer");
+    InitWindow(screen_size, screen_size + 25, "Mondelbrot Set Explorer");
 
     while (!WindowShouldClose()) {
         float wheel;
@@ -121,6 +121,8 @@ int main() {
         }
 
         BeginDrawing();
+            ClearBackground(BLACK);
+
             for (size_t x = 0; x < points_per_side; x++) {
                 for (size_t y = 0; y < points_per_side; y++) {
                     Point point(
@@ -140,7 +142,7 @@ int main() {
 
             char fps_buffer[16];
             sprintf(fps_buffer, "fps: %d", GetFPS());
-            DrawText(fps_buffer, screen_size * 0.85, screen_size * 0.05, 20, RED);
+            DrawText(fps_buffer, screen_size * 0.87, screen_size, 20, RED);
         EndDrawing();
     }
 
