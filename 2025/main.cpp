@@ -82,6 +82,7 @@ int main() {
 
     while (!WindowShouldClose()) {
         float wheel;
+        bool mouse_zoom = false;
 
         if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_K)) {
             wheel = GetFrameTime() * 64;
@@ -89,10 +90,20 @@ int main() {
             wheel = -GetFrameTime() * 64;
         } else {
             wheel = GetMouseWheelMove();
+            mouse_zoom = true;
         }
 
         if (wheel != 0) {
+            float old_width = frame_width;
             frame_width = frame_width * std::exp(wheel*0.1f);
+            if (mouse_zoom) {
+                double width_difference = old_width - frame_width;
+                Vector2 mouse = GetMousePosition();
+                center += width_difference * Point(
+                    mouse.x / screen_size - 0.5f,
+                    mouse.y / screen_size - 0.5f
+                );
+            }
         }
 
 
