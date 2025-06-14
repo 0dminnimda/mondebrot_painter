@@ -140,9 +140,13 @@ int main() {
                 }
             }
 
-            char fps_buffer[16];
-            sprintf(fps_buffer, "fps: %d", GetFPS());
-            DrawText(fps_buffer, screen_size * 0.87, screen_size, 20, RED);
+            char buffer[64];
+
+            sprintf(buffer, "center: %+F%+Fi  width: %e", (double)center.real(), (double)center.imag(), frame_width);
+            DrawText(buffer, screen_size * 0.0, screen_size + 1, 20, RED);
+
+            sprintf(buffer, "fps: %d", GetFPS());
+            DrawText(buffer, screen_size * 0.87, screen_size + 1, 20, RED);
         EndDrawing();
     }
 
