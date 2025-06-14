@@ -92,7 +92,7 @@ int main() {
         }
 
         if (wheel != 0) {
-            frame_width = std::exp(std::log(frame_width) + wheel*0.1f);
+            frame_width = frame_width * std::exp(wheel*0.1f);
         }
 
 
