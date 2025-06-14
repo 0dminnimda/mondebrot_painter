@@ -9,7 +9,7 @@ using u64 = uint64_t;
 using u32 = uint32_t;
 using u16 = uint16_t;
 using u8 = uint8_t;
-using Point = std::complex<double>;
+using Point = std::complex<long double>;
 
 #define COOL_SCHEMA 0
 #define SLOW_SCHEMA 1
@@ -17,10 +17,10 @@ using Point = std::complex<double>;
 
 constexpr int screen_size = 800;
 constexpr u32 max_retries = 200;
-constexpr u16 points_per_side = 400;
+constexpr u16 points_per_side = 200;
 
-constexpr double circle_boundary = 4; // 2**2
-constexpr double square_boundary = 2.8284271247461903; // 8**0.5
+constexpr long double circle_boundary = 4; // 2**2
+constexpr long double square_boundary = 2.8284271247461903; // 8**0.5
 
 bool showing_julia_set = false;
 Point julia_point(0, 0);
@@ -98,7 +98,7 @@ int main() {
             float old_width = frame_width;
             frame_width = frame_width * std::exp(wheel*0.1f);
             if (mouse_zoom) {
-                double width_difference = old_width - frame_width;
+                long double width_difference = old_width - frame_width;
                 Vector2 mouse = GetMousePosition();
                 center += width_difference * Point(
                     mouse.x / screen_size - 0.5f,
