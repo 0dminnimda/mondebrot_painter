@@ -111,8 +111,6 @@ int main() {
         }
 
         BeginDrawing();
-            ClearBackground(BLACK);
-
             for (size_t x = 0; x < points_per_side; x++) {
                 for (size_t y = 0; y < points_per_side; y++) {
                     Point point(
