@@ -63,6 +63,13 @@ Color gradient_to_color(float scale) {
     return Color{0, (u8)(scale*255), 0, 255};
 }
 
+Point convert_pixels_to_points(Vector2 position, float frame_width) {
+    return Point(
+        position.x * frame_width / screen_size,
+        position.y * frame_width / screen_size
+    );
+}
+
 // TODO: support resizing window
 
 int main() {
@@ -95,19 +102,10 @@ int main() {
 
 
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-            Vector2 delta_pixels = GetMouseDelta();
-            center -= Point(
-                delta_pixels.x * frame_width / screen_size,
-                delta_pixels.y * frame_width / screen_size
-            );
+            center -= convert_pixels_to_points(GetMouseDelta(), frame_width);
         }
-
         if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
-            Vector2 delta_pixels = GetMouseDelta();
-            julia_point -= Point(
-                delta_pixels.x * frame_width / screen_size,
-                delta_pixels.y * frame_width / screen_size
-            );
+            julia_point -= convert_pixels_to_points(GetMouseDelta(), frame_width);
         }
 
         BeginDrawing();
