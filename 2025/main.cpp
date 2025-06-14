@@ -9,7 +9,7 @@ using u64 = uint64_t;
 using u32 = uint32_t;
 using u16 = uint16_t;
 using u8 = uint8_t;
-using Point = std::complex<long double>;
+using Point = std::complex<double>;
 
 #define COOL_SCHEMA 0
 #define SLOW_SCHEMA 1
@@ -19,8 +19,8 @@ constexpr int screen_size = 800;
 constexpr u32 max_retries = 200;
 constexpr u16 points_per_side = 400;
 
-constexpr long double circle_boundary = 4; // 2**2
-constexpr long double square_boundary = 2.8284271247461903; // 8**0.5
+constexpr double circle_boundary = 4; // 2**2
+constexpr double square_boundary = 2.8284271247461903; // 8**0.5
 
 bool showing_julia_set = false;
 Point julia_point(0, 0);
