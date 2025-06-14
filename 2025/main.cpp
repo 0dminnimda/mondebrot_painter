@@ -71,6 +71,7 @@ Point convert_pixels_to_points(Vector2 position, float frame_width) {
 }
 
 // TODO: support resizing window
+// TODO: support rainbow coloring
 
 int main() {
     float frame_width = 2.5;
