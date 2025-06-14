@@ -1,2 +1,5 @@
 *.exe
 nob.exe.old
+*.profdata
+*.profraw
+*.asm

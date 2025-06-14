@@ -9,21 +9,25 @@ Later on I may try to also give this application an ability to explore infinitel
 You need to have [**raylib**](https://www.raylib.com/index.html) v5 installed, so your compiler can pick it up in the process of building.
 You can install it via package manager, get precompiled binaries or compile it from scratch.
 
-## Build
+## Build & Run
 
-First you need to initialize the builder, this needs to be done only once
+First you need to initialize the builder (this needs to be done only once, even if you change the code)
 
 ```shell
 clang nob.c -o nob.exe
 ```
 
-Then run it (any changes to nob.c will be automatically picked up)
+Then this command will compile and run the program
 
 ```shell
-./nob.exe
+./nob.exe run
 ```
 
-Now you have `mondex.exe` you can run!
+To see all possible commands run
+
+```shell
+./nob.exe help
+```
 
 ## Use
 
