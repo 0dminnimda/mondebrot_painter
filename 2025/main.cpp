@@ -99,6 +99,10 @@ Point convert_pixels_to_points(Vector2 position, float frame_width) {
 
 // TODO: support resizing window
 // TODO: support rainbow coloring
+// TODO: display julia point
+// TODO: allow to change color scheme in the app
+// TODO: allow to alt+click to set the point
+// TODO: allow to save the picture
 
 int main() {
     float frame_width = 2.5;
