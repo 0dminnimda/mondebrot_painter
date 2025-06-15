@@ -11,9 +11,9 @@ using u16 = uint16_t;
 using u8 = uint8_t;
 using Point = std::complex<long double>;
 
-#define COOL_SCHEMA    0
-#define SLOW_SCHEMA    0
-#define SINE_SCHEMA    1
+#define INVERSE_GRADIENT 1
+
+#define SINEBOW_SCHEMA 0
 #define RAINBOW_SCHEMA 1
 
 #define SQUARE_BOUNDS 0
@@ -46,6 +46,8 @@ u32 how_many_steps_to_diverge(Point point, u32 max_retries) {
         z = z*z + shift;
     }
 
+    /*z2 = z*z*z*z + 2*s*z*z + s*s + s*/
+
     return max_retries;
 }
 
@@ -72,12 +74,11 @@ Color sinebow(double t) {
 }
 
 Color gradient_to_color(float scale) {
-#if COOL_SCHEMA
-    if (scale == 1.0) return Color{0, 0, 0, 255};
+#if INVERSE_GRADIENT
     scale = 1/scale;
-#elif SLOW_SCHEMA
-    scale = 1 - (1-scale)*(1-scale);
-#elif SINE_SCHEMA
+#endif
+
+#if SINEBOW_SCHEMA
     if (scale == 1.0) return Color{0, 0, 0, 255};
     return sinebow(scale);
 #elif RAINBOW_SCHEMA
@@ -85,6 +86,7 @@ Color gradient_to_color(float scale) {
     return ColorFromHSV(scale*360, 1, 1);
 #else
 #endif
+
     return Color{0, (u8)(scale*255), 0, 255};
 }
 
