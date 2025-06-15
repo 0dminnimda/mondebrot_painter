@@ -11,13 +11,16 @@ using u16 = uint16_t;
 using u8 = uint8_t;
 using Point = std::complex<long double>;
 
-#define COOL_SCHEMA 0
-#define SLOW_SCHEMA 1
+#define COOL_SCHEMA    0
+#define SLOW_SCHEMA    0
+#define SINE_SCHEMA    1
+#define RAINBOW_SCHEMA 1
+
 #define SQUARE_BOUNDS 0
 
 constexpr int screen_size = 800;
 constexpr u32 max_retries = 200;
-constexpr u16 points_per_side = 200;
+constexpr u16 points_per_side = 400;
 
 constexpr long double circle_boundary = 4; // 2**2
 constexpr long double square_boundary = 2.8284271247461903; // 8**0.5
@@ -50,14 +53,36 @@ float get_mondelbrot_gradient(Point point, u32 max_retries) {
     return (float)how_many_steps_to_diverge(point, max_retries) / max_retries;
 }
 
+
+Color sinebow(double t) {
+    // rainbow made of 3 sine waves out of phase
+    // The 255 * sine^2 outputs range 255 * [0, 1] = [0, 255]
+    // The period for sin(pi*t) is [0, 1], same as expected t
+
+    double r_val = sin(M_PI * t + 0.0             );
+    double g_val = sin(M_PI * t + 2.0 * M_PI / 3.0);
+    double b_val = sin(M_PI * t + 4.0 * M_PI / 3.0);
+
+    return Color{
+        .r = (unsigned char)(r_val * r_val * r_val * r_val * 255.0),
+        .g = (unsigned char)(g_val * g_val * g_val * g_val * 255.0),
+        .b = (unsigned char)(b_val * b_val * b_val * b_val * 255.0),
+        .a = 255
+    };
+}
+
 Color gradient_to_color(float scale) {
 #if COOL_SCHEMA
-    if (scale == 1.0) {  // only precicely max_retries
-        return Color{0, 0, 0, 255};
-    }
+    if (scale == 1.0) return Color{0, 0, 0, 255};
     scale = 1/scale;
 #elif SLOW_SCHEMA
     scale = 1 - (1-scale)*(1-scale);
+#elif SINE_SCHEMA
+    if (scale == 1.0) return Color{0, 0, 0, 255};
+    return sinebow(scale);
+#elif RAINBOW_SCHEMA
+    if (scale == 1.0) return Color{0, 0, 0, 255};
+    return ColorFromHSV(scale*360, 1, 1);
 #else
 #endif
     return Color{0, (u8)(scale*255), 0, 255};
