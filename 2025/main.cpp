@@ -18,10 +18,14 @@ using Point = std::complex<long double>;
 
 #define SQUARE_BOUNDS 0
 
-constexpr int screen_size = 800;
+constexpr u16 screen_size = 800;
+constexpr u16 status_bar_size = 25;
 constexpr u32 max_retries = 200;
-constexpr u16 points_per_side = 400;
+constexpr u16 points_per_side = 600;
+uint8_t image_data[3 * points_per_side * points_per_side];
 
+constexpr float scale_threthold = 1.5;
+constexpr float default_scale = (float)screen_size / points_per_side;
 constexpr long double circle_boundary = 4; // 2**2
 constexpr long double square_boundary = 2.8284271247461903; // 8**0.5
 
@@ -90,12 +94,38 @@ Color gradient_to_color(float scale) {
     return Color{0, (u8)(scale*255), 0, 255};
 }
 
-Point convert_pixels_to_points(Vector2 position, float frame_width) {
+Point convert_pixels_to_points(Vector2 pixel, float frame_width) {
     return Point(
-        position.x * frame_width / screen_size,
-        position.y * frame_width / screen_size
+        pixel.x * frame_width / screen_size,
+        pixel.y * frame_width / screen_size
     );
 }
+
+Vector2 convert_points_to_pixels(Point point, float frame_width) {
+    return Vector2{
+        (float)(point.real() * screen_size / frame_width),
+        (float)(point.imag() * screen_size / frame_width)
+    };
+}
+
+void update_image_data(Point center_point, float frame_width) {
+    uint8_t *image_pointer = image_data;
+    for (size_t y = 0; y < points_per_side; y++) {
+        for (size_t x = 0; x < points_per_side; x++) {
+            Point point(
+                ((float)x - (float)points_per_side / 2) * frame_width / points_per_side,
+                ((float)y - (float)points_per_side / 2) * frame_width / points_per_side
+            );
+            point += center_point;
+            float scale = get_mondelbrot_gradient(point, max_retries);
+            Color color = gradient_to_color(scale);
+            * image_pointer++ = color.r;
+            * image_pointer++ = color.g;
+            * image_pointer++ = color.b;
+        }
+    }
+}
+
 
 // TODO: support resizing window
 // TODO: support rainbow coloring
@@ -103,14 +133,35 @@ Point convert_pixels_to_points(Vector2 position, float frame_width) {
 // TODO: allow to change color scheme in the app
 // TODO: allow to alt+click to set the point
 // TODO: allow to save the picture
+// TODO: reproduce pfp effect
+// TODO: render to textures and rerender when needed to save cpu
+//
+// TODO: look into <thread>, OpenMP, or pthreads
+// TODO: make it possible to switch to GLSL fragment shader
+//
+// TODO: rename wheel to zoom/scale
 
 int main() {
     float frame_width = 2.5;
-    Point center(-0.75, 0);
+    Point center_point(-0.75, 0);
+    Vector2 center_pixel = Vector2{screen_size/2.0f, screen_size/2.0f};
 
-    constexpr float spacing = (float)screen_size / points_per_side;
+    Image image = {
+        .data = image_data,
+        .width = points_per_side,
+        .height = points_per_side,
+        .format = PIXELFORMAT_UNCOMPRESSED_R8G8B8,
+        .mipmaps = 1
+    };
 
-    InitWindow(screen_size, screen_size + 25, "Mondelbrot Set Explorer");
+    InitWindow(screen_size, screen_size + status_bar_size, "Mondelbrot Set Explorer");
+
+    update_image_data(center_point, frame_width);
+    Texture2D texture = LoadTextureFromImage(image);
+
+    SetTargetFPS(120);
+
+    float scale = default_scale;
 
     while (!WindowShouldClose()) {
         float wheel;
@@ -127,14 +178,22 @@ int main() {
 
         if (wheel != 0) {
             float old_width = frame_width;
-            frame_width = frame_width * std::exp(wheel*0.1f);
+            float old_scale = scale;
+            float zoom_factor = std::exp(wheel*0.1f);
+            frame_width *= zoom_factor;
+            scale /= zoom_factor;
             if (mouse_zoom) {
                 long double width_difference = old_width - frame_width;
+                float scale_difference = old_scale - scale;
                 Vector2 mouse = GetMousePosition();
-                center += width_difference * Point(
+                center_point += width_difference * Point(
                     mouse.x / screen_size - 0.5f,
                     mouse.y / screen_size - 0.5f
                 );
+                /*center_pixel = Vector2{*/
+                /*    center_pixel.x + screen_size * scale_difference * (mouse.x / screen_size - 0.5f),*/
+                /*    center_pixel.y + screen_size * scale_difference * (mouse.y / screen_size - 0.5f)*/
+                /*};*/
             }
         }
 
@@ -145,35 +204,66 @@ int main() {
 
 
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-            center -= convert_pixels_to_points(GetMouseDelta(), frame_width);
+            Vector2 delta = GetMouseDelta();
+            center_pixel = Vector2{center_pixel.x + delta.x, center_pixel.y + delta.y};
+            center_point -= convert_pixels_to_points(delta, frame_width);
         }
         if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
             julia_point -= convert_pixels_to_points(GetMouseDelta(), frame_width);
         }
 
+        bool rendered = false;
+        if (IsKeyPressed(KEY_O)){// || (scale / default_scale) > scale_threthold || (default_scale / scale) > scale_threthold) {
+            printf("Rendered\n");
+            update_image_data(center_point, frame_width);
+            UpdateTexture(texture, image_data);
+
+            Vector2 center_pixel_delta = convert_points_to_pixels(center_point, frame_width);
+            /*center_pixel = Vector2{*/
+            /*    screen_size/2.0f + center_pixel_delta.x,*/
+            /*    screen_size/2.0f + center_pixel_delta.y*/
+            /*};*/
+            /*center_pixel = Vector2{*/
+            /*    screen_size/2.0f + (center_pixel.x - screen_size/2.0f)/scale,*/
+            /*    screen_size/2.0f + (center_pixel.y - screen_size/2.0f)/scale*/
+            /*};*/
+            center_pixel = Vector2{screen_size/2.0f, screen_size/2.0f};
+            scale = default_scale;
+            rendered = true;
+        }
+
         BeginDrawing();
             ClearBackground(BLACK);
 
-            for (size_t x = 0; x < points_per_side; x++) {
-                for (size_t y = 0; y < points_per_side; y++) {
-                    Point point(
-                        ((float)x - (float)points_per_side / 2) * frame_width / points_per_side,
-                        ((float)y - (float)points_per_side / 2) * frame_width / points_per_side
-                    );
-                    point += center;
-                    float scale = get_mondelbrot_gradient(point, max_retries);
-                    Color color = gradient_to_color(scale);
-#if 0
-                    DrawCircle(x * spacing, y * spacing, spacing / 2, color);
-#else
-                    DrawRectangle(x * spacing, y * spacing, spacing, spacing, color);
-#endif
-                }
-            }
+            Vector2 upper_left_corner = {
+                center_pixel.x - points_per_side*scale/2.0f,
+                center_pixel.y - points_per_side*scale/2.0f
+            };
+            DrawTextureEx(texture, upper_left_corner, 0.0f, scale, WHITE);
 
+            DrawCircle(center_pixel.x, center_pixel.y, /*radius*/8.0f, WHITE);
+            DrawCircle(center_pixel.x, center_pixel.y, /*radius*/5.0f, BLACK);
+
+            DrawCircle(screen_size/2.0f, screen_size/2.0f, /*radius*/8.0f, RED);
+            DrawCircle(screen_size/2.0f, screen_size/2.0f, /*radius*/5.0f, BLACK);
+
+            /*Vector2 center_pixel_delta = convert_points_to_pixels(center_point, frame_width);*/
+            /*Vector2 new_center_pixel = Vector2{*/
+            /*    center_pixel_delta.x,*/
+            /*    center_pixel_delta.y*/
+            /*};*/
+            Vector2 new_center_pixel = Vector2{
+                screen_size/2.0f + (center_pixel.x - screen_size/2.0f)/scale,
+                screen_size/2.0f + (center_pixel.y - screen_size/2.0f)/scale
+            };
+
+            DrawCircle(new_center_pixel.x, new_center_pixel.y, /*radius*/8.0f, GREEN);
+            DrawCircle(new_center_pixel.x, new_center_pixel.y, /*radius*/5.0f, BLACK);
+
+            DrawRectangle(0, screen_size, screen_size, status_bar_size, BLACK);
             char buffer[64];
 
-            sprintf(buffer, "center: %+F%+Fi  width: %e", (double)center.real(), (double)center.imag(), frame_width);
+            sprintf(buffer, "center: %+F%+Fi  width: %e", (double)center_point.real(), (double)center_point.imag(), frame_width);
             DrawText(buffer, screen_size * 0.01, screen_size + 1, 20, RED);
 
             sprintf(buffer, "fps: %d", GetFPS());
