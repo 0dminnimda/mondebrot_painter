@@ -70,6 +70,9 @@ bool compile_and_run(Compilation_Mode mode) {
     return cmd_run_sync_and_reset(&cmd);
 }
 
+
+// TODO: https://clang.llvm.org/docs/analyzer/developer-docs/PerformanceInvestigation.html
+
 bool analyze_perf() {
     set_enviroment_variable("LLVM_PROFILE_FILE", "mondex.profraw");
     if (!compile_and_run(COVERAGE)) return 1;
