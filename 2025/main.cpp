@@ -25,7 +25,7 @@ constexpr u16 points_per_side = 600;
 uint8_t image_data[3 * points_per_side * points_per_side];
 
 constexpr float scale_threthold = 1.5;
-constexpr float default_scale = (float)screen_size / points_per_side;
+constexpr float image_scale = (float)screen_size / points_per_side;
 constexpr long double circle_boundary = 4; // 2**2
 constexpr long double square_boundary = 2.8284271247461903; // 8**0.5
 
@@ -161,7 +161,7 @@ int main() {
 
     SetTargetFPS(120);
 
-    float scale = default_scale;
+    float scale = 1.0f;
 
     while (!WindowShouldClose()) {
         float wheel;
@@ -213,7 +213,7 @@ int main() {
         }
 
         bool rendered = false;
-        if (IsKeyPressed(KEY_O)){// || (scale / default_scale) > scale_threthold || (default_scale / scale) > scale_threthold) {
+        if (IsKeyPressed(KEY_O)){// || scale > scale_threthold || 1.0f > scale * scale_threthold) {
             printf("Rendered\n");
             update_image_data(center_point, frame_width);
             UpdateTexture(texture, image_data);
@@ -228,7 +228,7 @@ int main() {
             /*    screen_size/2.0f + (center_pixel.y - screen_size/2.0f)/scale*/
             /*};*/
             center_pixel = Vector2{screen_size/2.0f, screen_size/2.0f};
-            scale = default_scale;
+            scale = 1.0f;
             rendered = true;
         }
 
@@ -239,7 +239,7 @@ int main() {
                 center_pixel.x - points_per_side*scale/2.0f,
                 center_pixel.y - points_per_side*scale/2.0f
             };
-            DrawTextureEx(texture, upper_left_corner, 0.0f, scale, WHITE);
+            DrawTextureEx(texture, upper_left_corner, 0.0f, scale * image_scale, WHITE);
 
             DrawCircle(center_pixel.x, center_pixel.y, /*radius*/8.0f, WHITE);
             DrawCircle(center_pixel.x, center_pixel.y, /*radius*/5.0f, BLACK);
