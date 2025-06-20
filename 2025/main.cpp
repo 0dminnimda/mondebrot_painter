@@ -24,7 +24,6 @@ constexpr u16 screen_size = 800;
 constexpr u16 status_bar_size = 25;
 constexpr u32 max_retries = 200;
 constexpr u16 points_per_side = 600;
-uint8_t image_data[3 * points_per_side * points_per_side];
 
 constexpr float keyboard_zoom_multiplier = 32;
 constexpr float scale_threthold = 1.5;
@@ -32,11 +31,24 @@ constexpr float image_scale = (float)screen_size / points_per_side;
 constexpr long double circle_boundary = 4; // 2**2
 constexpr long double square_boundary = 2.8284271247461903; // 8**0.5
 
-bool showing_julia_set = false;
-Point julia_point(0, 0);
+struct State {
+    bool showing_julia_set = false;
+    Point julia_point = Point(0, 0);
+
+    float scale = 1.0f;
+    Vector2 center_pixel = Vector2{screen_size/2.0f, screen_size/2.0f};
+
+    float frame_width = 2.5;
+    Point center_point = Point(-0.75, 0);
+
+    uint8_t image_data[3 * points_per_side * points_per_side];
+};
+
+State state = State();
+
 
 u32 how_many_steps_to_diverge(Point point, u32 max_retries) {
-    Point shift = showing_julia_set? julia_point : point;
+    Point shift = state.showing_julia_set? state.julia_point : point;
     Point z = point;
 
     for (u32 step = 0; step < max_retries; step++) {
@@ -112,7 +124,7 @@ Point convert_pixels_to_points(Vector2 pixel, float frame_width) {
 /*}*/
 
 void update_image_data(Point center_point, float frame_width) {
-    uint8_t *image_pointer = image_data;
+    uint8_t *image_pointer = state.image_data;
     for (size_t y = 0; y < points_per_side; y++) {
         for (size_t x = 0; x < points_per_side; x++) {
             Point point(
@@ -129,6 +141,34 @@ void update_image_data(Point center_point, float frame_width) {
     }
 }
 
+bool zoom_if_there_is_input() {
+    float wheel;
+    bool mouse_zoom = false;
+
+    if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_K)) {
+        wheel = GetFrameTime() * keyboard_zoom_multiplier;
+    } else if (IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_J)) {
+        wheel = -GetFrameTime() * keyboard_zoom_multiplier;
+    } else {
+        wheel = GetMouseWheelMove();
+        mouse_zoom = true;
+    }
+
+    if (wheel != 0) {
+        float old_scale = state.scale;
+        state.scale /= std::exp(wheel*0.1f);
+        if (mouse_zoom) {
+            float scale_difference = old_scale - state.scale;
+            Vector2 mouse = GetMousePosition();
+            state.center_pixel = Vector2{
+                state.center_pixel.x + screen_size * scale_difference * (mouse.x / screen_size - 0.5f),
+                state.center_pixel.y + screen_size * scale_difference * (mouse.y / screen_size - 0.5f)
+            };
+        }
+        return true;
+    }
+    return false;
+}
 
 // TODO: support resizing window
 // TODO: support rainbow coloring
@@ -140,18 +180,10 @@ void update_image_data(Point center_point, float frame_width) {
 //
 // TODO: look into <thread>, OpenMP, or pthreads
 // TODO: make it possible to switch to GLSL fragment shader
-//
-// TODO: rename wheel to zoom/scale
 
 int main() {
-    float frame_width = 2.5;
-    float scale = 1.0f;
-
-    Point center_point(-0.75, 0);
-    Vector2 center_pixel = Vector2{screen_size/2.0f, screen_size/2.0f};
-
     Image image = {
-        .data = image_data,
+        .data = state.image_data,
         .width = points_per_side,
         .height = points_per_side,
         .format = PIXELFORMAT_UNCOMPRESSED_R8G8B8,
@@ -160,7 +192,7 @@ int main() {
 
     InitWindow(screen_size, screen_size + status_bar_size, "Mondelbrot Set Explorer");
 
-    update_image_data(center_point, frame_width);
+    update_image_data(state.center_point, state.frame_width);
     Texture2D texture = LoadTextureFromImage(image);
 
     SetTargetFPS(120);
@@ -168,75 +200,54 @@ int main() {
     while (!WindowShouldClose()) {
         bool force_render = false;
 
-        float wheel;
-        bool mouse_zoom = false;
-
-        if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_K)) {
-            wheel = GetFrameTime() * keyboard_zoom_multiplier;
-        } else if (IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_J)) {
-            wheel = -GetFrameTime() * keyboard_zoom_multiplier;
-        } else {
-            wheel = GetMouseWheelMove();
-            mouse_zoom = true;
-        }
-
-        if (wheel != 0) {
-            float old_scale = scale;
-            scale /= std::exp(wheel*0.1f);
-            if (mouse_zoom) {
-                float scale_difference = old_scale - scale;
-                Vector2 mouse = GetMousePosition();
-                center_pixel = Vector2{
-                    center_pixel.x + screen_size * scale_difference * (mouse.x / screen_size - 0.5f),
-                    center_pixel.y + screen_size * scale_difference * (mouse.y / screen_size - 0.5f)
-                };
-            }
-        }
-
+        zoom_if_there_is_input();
 
         if (IsKeyPressed(KEY_V)) {
-            showing_julia_set = !showing_julia_set;
+            state.showing_julia_set = !state.showing_julia_set;
             force_render = true;
         }
 
 
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
             Vector2 delta = GetMouseDelta();
-            center_pixel = Vector2{center_pixel.x + delta.x, center_pixel.y + delta.y};
+            state.center_pixel = Vector2{
+                state.center_pixel.x + delta.x,
+                state.center_pixel.y + delta.y
+            };
         }
         if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
-            julia_point -= convert_pixels_to_points(GetMouseDelta(), frame_width);
+            state.julia_point -= convert_pixels_to_points(GetMouseDelta(), state.frame_width);
             force_render = true;
         }
 
-        bool zoomed_too_much = scale > scale_threthold || 1.0f > scale * scale_threthold;
+        bool zoomed_too_much = state.scale > scale_threthold || 1.0f > state.scale * scale_threthold;
         if (force_render || zoomed_too_much) {
-            frame_width /= scale;
+            state.frame_width /= state.scale;
             Vector2 pixel_difference = {
-                center_pixel.x - points_per_side*image_scale/2.0f,
-                center_pixel.y - points_per_side*image_scale/2.0f
+                state.center_pixel.x - points_per_side*image_scale/2.0f,
+                state.center_pixel.y - points_per_side*image_scale/2.0f
             };
-            center_point -= convert_pixels_to_points(pixel_difference, frame_width);
+            state.center_point -= convert_pixels_to_points(pixel_difference, state.frame_width);
 
-            update_image_data(center_point, frame_width);
-            UpdateTexture(texture, image_data);
+            update_image_data(state.center_point, state.frame_width);
+            UpdateTexture(texture, state.image_data);
 
-            scale = 1.0f;
-            center_pixel = Vector2{screen_size/2.0f, screen_size/2.0f};
+            state.scale = 1.0f;
+            state.center_pixel = Vector2{screen_size/2.0f, screen_size/2.0f};
         }
 
         BeginDrawing();
             ClearBackground(BLACK);
 
             Vector2 upper_left_corner = {
-                center_pixel.x - points_per_side*scale*image_scale/2.0f,
-                center_pixel.y - points_per_side*scale*image_scale/2.0f
+                state.center_pixel.x - points_per_side*state.scale*image_scale/2.0f,
+                state.center_pixel.y - points_per_side*state.scale*image_scale/2.0f
             };
-            DrawTextureEx(texture, upper_left_corner, 0.0f, scale * image_scale, WHITE);
+            DrawTextureEx(texture, upper_left_corner, 0.0f, state.scale * image_scale, WHITE);
 
 #if DRAW_CENTERS
-            DrawCircle(center_pixel.x, center_pixel.y, /*radius*/8.0f, WHITE);
-            DrawCircle(center_pixel.x, center_pixel.y, /*radius*/5.0f, BLACK);
+            DrawCircle(state.center_pixel.x, state.center_pixel.y, /*radius*/8.0f, WHITE);
+            DrawCircle(state.center_pixel.x, state.center_pixel.y, /*radius*/5.0f, BLACK);
 
             DrawCircle(screen_size/2.0f, screen_size/2.0f, /*radius*/8.0f, RED);
             DrawCircle(screen_size/2.0f, screen_size/2.0f, /*radius*/5.0f, BLACK);
@@ -245,7 +256,7 @@ int main() {
             DrawRectangle(0, screen_size, screen_size, status_bar_size, BLACK);
             char buffer[64];
 
-            sprintf(buffer, "center: %+F%+Fi  width: %e", (double)center_point.real(), (double)center_point.imag(), frame_width);
+            sprintf(buffer, "center: %+F%+Fi  width: %e", (double)state.center_point.real(), (double)state.center_point.imag(), state.frame_width);
             DrawText(buffer, screen_size * 0.01, screen_size + 1, 20, RED);
 
             sprintf(buffer, "fps: %d", GetFPS());
