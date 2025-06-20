@@ -11,6 +11,8 @@ using u16 = uint16_t;
 using u8 = uint8_t;
 using Point = std::complex<long double>;
 
+#define DRAW_CENTERS 0
+
 #define INVERSE_GRADIENT 1
 
 #define SINEBOW_SCHEMA 0
@@ -164,6 +166,8 @@ int main() {
     SetTargetFPS(120);
 
     while (!WindowShouldClose()) {
+        bool force_render = false;
+
         float wheel;
         bool mouse_zoom = false;
 
@@ -192,6 +196,7 @@ int main() {
 
         if (IsKeyPressed(KEY_V)) {
             showing_julia_set = !showing_julia_set;
+            force_render = true;
         }
 
 
@@ -201,11 +206,11 @@ int main() {
         }
         if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
             julia_point -= convert_pixels_to_points(GetMouseDelta(), frame_width);
+            force_render = true;
         }
 
-        bool rendered = false;
-        if (scale > scale_threthold || 1.0f > scale * scale_threthold) {
-            /*printf("Rendered\n");*/
+        bool zoomed_too_much = scale > scale_threthold || 1.0f > scale * scale_threthold;
+        if (force_render || zoomed_too_much) {
             frame_width /= scale;
             Vector2 pixel_difference = {
                 center_pixel.x - points_per_side*image_scale/2.0f,
@@ -216,7 +221,6 @@ int main() {
             update_image_data(center_point, frame_width);
             UpdateTexture(texture, image_data);
 
-            rendered = true;
             scale = 1.0f;
             center_pixel = Vector2{screen_size/2.0f, screen_size/2.0f};
         }
@@ -230,11 +234,13 @@ int main() {
             };
             DrawTextureEx(texture, upper_left_corner, 0.0f, scale * image_scale, WHITE);
 
+#if DRAW_CENTERS
             DrawCircle(center_pixel.x, center_pixel.y, /*radius*/8.0f, WHITE);
             DrawCircle(center_pixel.x, center_pixel.y, /*radius*/5.0f, BLACK);
 
             DrawCircle(screen_size/2.0f, screen_size/2.0f, /*radius*/8.0f, RED);
             DrawCircle(screen_size/2.0f, screen_size/2.0f, /*radius*/5.0f, BLACK);
+#endif
 
             DrawRectangle(0, screen_size, screen_size, status_bar_size, BLACK);
             char buffer[64];
