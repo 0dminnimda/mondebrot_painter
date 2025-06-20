@@ -102,12 +102,12 @@ Point convert_pixels_to_points(Vector2 pixel, float frame_width) {
     );
 }
 
-Vector2 convert_points_to_pixels(Point point, float frame_width) {
-    return Vector2{
-        (float)(point.real() * screen_size / frame_width),
-        (float)(point.imag() * screen_size / frame_width)
-    };
-}
+/*Vector2 convert_points_to_pixels(Point point, float frame_width) {*/
+/*    return Vector2{*/
+/*        (float)(point.real() * screen_size / frame_width),*/
+/*        (float)(point.imag() * screen_size / frame_width)*/
+/*    };*/
+/*}*/
 
 void update_image_data(Point center_point, float frame_width) {
     uint8_t *image_pointer = image_data;
@@ -135,7 +135,6 @@ void update_image_data(Point center_point, float frame_width) {
 // TODO: allow to alt+click to set the point
 // TODO: allow to save the picture
 // TODO: reproduce pfp effect
-// TODO: render to textures and rerender when needed to save cpu
 //
 // TODO: look into <thread>, OpenMP, or pthreads
 // TODO: make it possible to switch to GLSL fragment shader
@@ -144,6 +143,8 @@ void update_image_data(Point center_point, float frame_width) {
 
 int main() {
     float frame_width = 2.5;
+    float scale = 1.0f;
+
     Point center_point(-0.75, 0);
     Vector2 center_pixel = Vector2{screen_size/2.0f, screen_size/2.0f};
 
@@ -162,8 +163,6 @@ int main() {
 
     SetTargetFPS(120);
 
-    float scale = 1.0f;
-
     while (!WindowShouldClose()) {
         float wheel;
         bool mouse_zoom = false;
@@ -178,23 +177,15 @@ int main() {
         }
 
         if (wheel != 0) {
-            float old_width = frame_width;
             float old_scale = scale;
-            float zoom_factor = std::exp(wheel*0.1f);
-            frame_width *= zoom_factor;
-            scale /= zoom_factor;
+            scale /= std::exp(wheel*0.1f);
             if (mouse_zoom) {
-                long double width_difference = old_width - frame_width;
                 float scale_difference = old_scale - scale;
                 Vector2 mouse = GetMousePosition();
-                center_point += width_difference * Point(
-                    mouse.x / screen_size - 0.5f,
-                    mouse.y / screen_size - 0.5f
-                );
-                /*center_pixel = Vector2{*/
-                /*    center_pixel.x + screen_size * scale_difference * (mouse.x / screen_size - 0.5f),*/
-                /*    center_pixel.y + screen_size * scale_difference * (mouse.y / screen_size - 0.5f)*/
-                /*};*/
+                center_pixel = Vector2{
+                    center_pixel.x + screen_size * scale_difference * (mouse.x / screen_size - 0.5f),
+                    center_pixel.y + screen_size * scale_difference * (mouse.y / screen_size - 0.5f)
+                };
             }
         }
 
@@ -207,38 +198,35 @@ int main() {
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
             Vector2 delta = GetMouseDelta();
             center_pixel = Vector2{center_pixel.x + delta.x, center_pixel.y + delta.y};
-            center_point -= convert_pixels_to_points(delta, frame_width);
         }
         if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
             julia_point -= convert_pixels_to_points(GetMouseDelta(), frame_width);
         }
 
         bool rendered = false;
-        if (IsKeyPressed(KEY_O)){// || scale > scale_threthold || 1.0f > scale * scale_threthold) {
-            printf("Rendered\n");
+        if (scale > scale_threthold || 1.0f > scale * scale_threthold) {
+            /*printf("Rendered\n");*/
+            frame_width /= scale;
+            Vector2 pixel_difference = {
+                center_pixel.x - points_per_side*image_scale/2.0f,
+                center_pixel.y - points_per_side*image_scale/2.0f
+            };
+            center_point -= convert_pixels_to_points(pixel_difference, frame_width);
+
             update_image_data(center_point, frame_width);
             UpdateTexture(texture, image_data);
 
-            Vector2 center_pixel_delta = convert_points_to_pixels(center_point, frame_width);
-            /*center_pixel = Vector2{*/
-            /*    screen_size/2.0f + center_pixel_delta.x,*/
-            /*    screen_size/2.0f + center_pixel_delta.y*/
-            /*};*/
-            /*center_pixel = Vector2{*/
-            /*    screen_size/2.0f + (center_pixel.x - screen_size/2.0f)/scale,*/
-            /*    screen_size/2.0f + (center_pixel.y - screen_size/2.0f)/scale*/
-            /*};*/
-            center_pixel = Vector2{screen_size/2.0f, screen_size/2.0f};
-            scale = 1.0f;
             rendered = true;
+            scale = 1.0f;
+            center_pixel = Vector2{screen_size/2.0f, screen_size/2.0f};
         }
 
         BeginDrawing();
             ClearBackground(BLACK);
 
             Vector2 upper_left_corner = {
-                center_pixel.x - points_per_side*scale/2.0f,
-                center_pixel.y - points_per_side*scale/2.0f
+                center_pixel.x - points_per_side*scale*image_scale/2.0f,
+                center_pixel.y - points_per_side*scale*image_scale/2.0f
             };
             DrawTextureEx(texture, upper_left_corner, 0.0f, scale * image_scale, WHITE);
 
@@ -247,19 +235,6 @@ int main() {
 
             DrawCircle(screen_size/2.0f, screen_size/2.0f, /*radius*/8.0f, RED);
             DrawCircle(screen_size/2.0f, screen_size/2.0f, /*radius*/5.0f, BLACK);
-
-            /*Vector2 center_pixel_delta = convert_points_to_pixels(center_point, frame_width);*/
-            /*Vector2 new_center_pixel = Vector2{*/
-            /*    center_pixel_delta.x,*/
-            /*    center_pixel_delta.y*/
-            /*};*/
-            Vector2 new_center_pixel = Vector2{
-                screen_size/2.0f + (center_pixel.x - screen_size/2.0f)/scale,
-                screen_size/2.0f + (center_pixel.y - screen_size/2.0f)/scale
-            };
-
-            DrawCircle(new_center_pixel.x, new_center_pixel.y, /*radius*/8.0f, GREEN);
-            DrawCircle(new_center_pixel.x, new_center_pixel.y, /*radius*/5.0f, BLACK);
 
             DrawRectangle(0, screen_size, screen_size, status_bar_size, BLACK);
             char buffer[64];
