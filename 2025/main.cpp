@@ -24,6 +24,7 @@ constexpr u32 max_retries = 200;
 constexpr u16 points_per_side = 600;
 uint8_t image_data[3 * points_per_side * points_per_side];
 
+constexpr float keyboard_zoom_multiplier = 32;
 constexpr float scale_threthold = 1.5;
 constexpr float image_scale = (float)screen_size / points_per_side;
 constexpr long double circle_boundary = 4; // 2**2
@@ -168,9 +169,9 @@ int main() {
         bool mouse_zoom = false;
 
         if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_K)) {
-            wheel = GetFrameTime() * 64;
+            wheel = GetFrameTime() * keyboard_zoom_multiplier;
         } else if (IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_J)) {
-            wheel = -GetFrameTime() * 64;
+            wheel = -GetFrameTime() * keyboard_zoom_multiplier;
         } else {
             wheel = GetMouseWheelMove();
             mouse_zoom = true;
