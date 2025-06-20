@@ -5,10 +5,13 @@
 #define cxx(cmd) cmd_append((cmd), "clang++")
 #define common_flags(cmd) cmd_append((cmd), "-O3", "-Wno-unused-const-variable")
 // , "-march=native"
+#define CC_FLAGS "-Wall", "-Wextra"
+//, "-ftrapv", "-fcatch-undefined-behavior"
 #define get_arg(argv, argc) (argc > 0? shift(argv, argc) : "")
 
 #define SRC "main.cpp"
 #define EXE "mondex.exe"
+#define BUILD_STATIC 0
 
 
 bool set_enviroment_variable(const char *name, const char *value) {
@@ -49,8 +52,14 @@ bool compile(Compilation_Mode mode) {
         nob_cc_output(&cmd, EXE);
         cmd_append(&cmd, SRC);
 
-        nob_cc_flags(&cmd);
+        cmd_append(&cmd, CC_FLAGS);
+        /*nob_cc_flags(&cmd);*/
+#if BUILD_STATIC
+        cmd_append(&cmd, "-lraylib", "-lopengl32", "-lm", "-luser32", "-lgdi32", "-lwinmm");
+        cmd_append(&cmd, "-static");
+#else
         cmd_append(&cmd, "-lraylib");
+#endif
     }
 
     common_flags(&cmd);
