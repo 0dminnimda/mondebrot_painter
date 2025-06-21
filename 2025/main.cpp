@@ -180,6 +180,7 @@ bool zoom_if_there_is_input() {
 //
 // TODO: look into <thread>, OpenMP, or pthreads
 // TODO: make it possible to switch to GLSL fragment shader
+// TODO: desyncronize zooming and rendering to the texture (like running in a separate thread)
 
 int main() {
     Image image = {
